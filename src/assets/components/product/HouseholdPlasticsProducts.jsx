@@ -3,22 +3,22 @@ import axios from 'axios';
 import { API_BASE_URL } from '../../../config/api';
 import { Link } from 'react-router-dom';
 
-const HouseholdPlasticsProducts = () => {
-  // Fetch the 'chairs' category first
-  const { data: householdPlasticsCategory, isLoading: loadingCategory, isError: errorCategory, error: categoryError } = useQuery({
-    queryKey: ['category', 'household-plastics'],
+const GiftItemsProducts = () => {
+  // Fetch the 'gift-items' category first
+  const { data: giftItemsCategory, isLoading: loadingCategory, isError: errorCategory, error: categoryError } = useQuery({
+    queryKey: ['category', 'gift-items'],
     queryFn: async () => {
-      const res = await axios.get(`${API_BASE_URL}/categories/slug/household-plastics`);
+      const res = await axios.get(`${API_BASE_URL}/categories/slug/gift-items`);
       return res.data;
     },
   });
 
-  // Fetch products for the 'chairs' category
+  // Fetch products for the 'gift-items' category
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['products-household-plastics', householdPlasticsCategory?._id],
-    enabled: !!householdPlasticsCategory?._id,
+    queryKey: ['products-gift-items', giftItemsCategory?._id],
+    enabled: !!giftItemsCategory?._id,
     queryFn: async () => {
-      const res = await axios.get(`${API_BASE_URL}/products?category=${householdPlasticsCategory._id}&limit=5`);
+      const res = await axios.get(`${API_BASE_URL}/products?category=${giftItemsCategory._id}&limit=5`);
       return res.data.data || res.data;
     },
   });
@@ -108,4 +108,4 @@ const HouseholdPlasticsProducts = () => {
   );
 };
 
-export default HouseholdPlasticsProducts;
+export default GiftItemsProducts;

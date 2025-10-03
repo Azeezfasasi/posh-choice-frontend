@@ -13,6 +13,7 @@ import KitchenAppliancesProducts from './assets/components/product/KitchenApplia
 import RecentlyViewedProducts from './assets/components/product/RecentlyViewedProducts'
 import { SubscribePopUp } from './assets/components/SubscribePopUp'
 import WhatsAppChat from './assets/components/WhatsAppChat'
+import GiftItemsProducts from './assets/components/product/HouseholdPlasticsProducts'
 
 function Home() {
   return (
@@ -29,9 +30,10 @@ function Home() {
     <FeaturedProduct />
     <RecentProduct />
     <KitchenEquipmentProducts />
-    <HouseholdPlasticsProducts />
+    {/* <HouseholdPlasticsProducts /> */}
+    <GiftItemsProducts />
     <KitchenAppliancesProducts />
-    <PlasticProducts />
+    {/* <PlasticProducts /> */}
     <RecentlyViewedProducts />
     <Footer />
     <WhatsAppChat />
