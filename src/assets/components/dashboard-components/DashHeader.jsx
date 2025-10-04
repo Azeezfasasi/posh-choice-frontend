@@ -12,7 +12,7 @@ import TagIcon from '@rsuite/icons/Tag';
 import MessageIcon from '@rsuite/icons/Message';
 import GearIcon from '@rsuite/icons/Gear';
 import { Sidenav, Nav } from 'rsuite';
-// import logotransparent from '../../images/logotransparent.png';
+import poshchoice2 from '../../images/poshchoice2.png';
 
 function DashHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -80,12 +80,12 @@ function DashHeader() {
     <div className="bg-white py-4 px-6 flex justify-between items-center shadow-md sticky top-0 z-50 border-b border-solid border-gray-500">
       {/* Logo */}
       <Link to="/" className="flex items-center space-x-2">
-        {/* <img
-          src={logotransparent}
+        <img
+          src={poshchoice2}
           alt="logo image"
-          className='w-[100px] h-[30px] md:w-[200px] md:h-[40px]'
-        /> */}
-        <h2 className='text-xl font-bold text-purple-500'>Posh Choice Store</h2>
+          className='w-[90px] h-[40px] md:w-[120px] md:h-[60px]'
+        />
+        {/* <h2 className='text-xl font-bold text-purple-500'>Posh Choice Store</h2> */}
       </Link>
 
       {/* Hamburger Icon (Mobile) */}

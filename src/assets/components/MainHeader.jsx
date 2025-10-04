@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import accountprofile from '../images/accountprofile.svg'
 import CartIcon from './dashboard-components/CartIcon';
 import WishlistIcon from './dashboard-components/Wishlisticon';
-// import logotransparent from '../images/logotransparent.png';
+import poshchoice2 from '../images/poshchoice2.png';
 import ProductSearch from './product/ProductSearch';
 
 function MainHeader() {
@@ -14,12 +14,12 @@ function MainHeader() {
       <div className="bg-gray-300 py-4 px-2 md:px-6 flex justify-between items-center sticky top-0 z-50">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2">
-          {/* <img
-            src={logotransparent}
+          <img
+            src={poshchoice2}
             alt="logo image"
-            className='w-[100px] h-[30px] md:w-[220px] md:h-[40px]'
-          /> */}
-          <h2 className='text-xl font-bold text-purple-500'>Posh Choice Store</h2>
+            className='w-[100px] h-[50px] md:w-[120px] md:h-[60px]'
+          />
+          {/* <h2 className='text-xl font-bold text-purple-500'>Posh Choice Store</h2> */}
         </Link>
 
         {/* Hamburger Icon (Mobile) */}
