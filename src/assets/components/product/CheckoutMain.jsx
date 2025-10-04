@@ -395,6 +395,17 @@ const CheckoutMain = () => {
                   <input
                     type="radio"
                     name="paymentMethod"
+                    value="WhatsApp"
+                    checked={paymentMethod === 'WhatsApp'}
+                    onChange={() => setPaymentMethod('WhatsApp')}
+                    className="mr-2"
+                  />
+                  Order Via WhatsApp <i className="fa-brands fa-square-whatsapp ml-1 text-green-700 text-[20px]"></i>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
                     value="Cash on Delivery"
                     checked={paymentMethod === 'Cash on Delivery'}
                     onChange={() => setPaymentMethod('Cash on Delivery')}
@@ -412,28 +423,6 @@ const CheckoutMain = () => {
                     className="mr-2"
                   />
                   Bank Transfer <i className="fa-solid fa-money-bill-transfer ml-1 text-purple-500 text-[20px]"></i>
-                </label>
-                {/* <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="Credit/Debit Card"
-                    checked={paymentMethod === 'Credit/Debit Card'}
-                    onChange={() => setPaymentMethod('Credit/Debit Card')}
-                    className="mr-2"
-                  />
-                  Pay with Credit/Debit Card
-                </label> */}
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="WhatsApp"
-                    checked={paymentMethod === 'WhatsApp'}
-                    onChange={() => setPaymentMethod('WhatsApp')}
-                    className="mr-2"
-                  />
-                  Order Via WhatsApp <i className="fa-brands fa-square-whatsapp ml-1 text-green-700 text-[20px]"></i>
                 </label>
               </div>
 

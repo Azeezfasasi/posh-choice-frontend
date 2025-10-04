@@ -41,7 +41,7 @@ function ProductHero() {
   const slide = heroSlides[current];
 
   return (
-    <section className="relative bg-gradient-to-br from-blue-50 to-black py-16 md:py-24 lg:py-32 flex flex-col items-center justify-center text-center overflow-hidden min-h-[420px]">
+    <section className="relative bg-gradient-to-br from-gray-500 to-black py-16 md:py-24 lg:py-32 flex flex-col items-center justify-center text-center overflow-hidden min-h-[420px]">
       <img
         src={slide.image}
         alt={slide.title}
