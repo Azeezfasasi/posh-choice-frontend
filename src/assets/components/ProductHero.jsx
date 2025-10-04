@@ -1,28 +1,28 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import plasticbg1 from '../images/product-image/plasticbg1.jpg';
-import plasticbg2 from '../images/product-image/plasticbg2.png';
-import plasticbg3 from '../images/product-image/plasticbg3.jpg';
+import cusmetics1 from '../images/cusmetics1.png';
+import stainless2 from '../images/stainless2.png';
+import fan from '../images/fan.png';
 
 const heroSlides = [
   {
-    title: 'Discover Quality Survenir Products for Every Need',
-    subtitle: 'Shop the best deals on household, industrial, and custom survenir items. Fast delivery, top brands, and unbeatable prices!',
-    image: plasticbg1,
+    title: 'Discover Quality Household Products for Every Need',
+    subtitle: 'Shop the best deals on household, industrial, and custom souvenir items. Fast delivery, top brands, and unbeatable prices!',
+    image: stainless2,
     cta: 'Shop Now',
     link: '/app/shop',
   },
   {
     title: 'Bulk Orders & Custom Solutions',
     subtitle: 'Get special pricing and tailored solutions for your business or event. Contact us for a quote!',
-    image: plasticbg3,
+    image: cusmetics1,
     cta: 'Request Quote',
     link: '/quoterequest',
   },
   {
-    title: 'Durable Survenir Products for Home & Business',
-    subtitle: 'Explore our range of sustainable, long-lasting survenir products for every application.',
-    image: plasticbg2,
+    title: 'Durable Souvenir Products for Home & Business',
+    subtitle: 'Explore our range of sustainable, long-lasting souvenir products for every application.',
+    image: fan,
     cta: 'Browse Products',
     link: '/app/shop',
   },
