@@ -37,7 +37,7 @@ export const SubscribePopUp = () => {
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={handleClose}>
-            <div className='bg-orange-700 text-white py-2 px-6 rounded-md'>Close</div>
+            <div className='bg-purple-700 text-white py-2 px-6 rounded-md'>Close</div>
           </Button>
         </Modal.Footer>
       </Modal>

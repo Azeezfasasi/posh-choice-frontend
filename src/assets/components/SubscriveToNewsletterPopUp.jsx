@@ -44,7 +44,7 @@ function SubscribeToNewsletterPopUp() {
         <input
             type="email"
             placeholder="Your email address"
-            className="w-full px-3 py-2 rounded text-orange-500 focus:outline-orange-500 borde border-solid border-orange-500 outline"
+            className="w-full px-3 py-2 rounded text-purple-500 focus:outline-purple-500 borde border-solid border-purple-500 outline"
             required
             value={email}
             onChange={e => setEmail(e.target.value)}
@@ -52,7 +52,7 @@ function SubscribeToNewsletterPopUp() {
         />
         <button
             type="submit"
-            className="w-[200px] bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded transition cursor-pointer"
+            className="w-[200px] bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition cursor-pointer"
             disabled={mutation.isLoading}
         >
             {mutation.isLoading ? 'Subscribing...' : 'Subscribe'}
