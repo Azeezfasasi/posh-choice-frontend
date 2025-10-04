@@ -30,6 +30,9 @@ const heroSlides = [
 
 function ProductHero() {
   const [current, setCurrent] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [deltaX, setDeltaX] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -38,10 +41,49 @@ function ProductHero() {
     return () => clearInterval(interval);
   }, []);
 
+  // Pointer (mouse/touch) handlers for drag/swipe
+  const onPointerDown = (e) => {
+    setIsDragging(true);
+    setStartX(e.clientX || (e.touches && e.touches[0].clientX) || 0);
+    setDeltaX(0);
+  };
+
+  const onPointerMove = (e) => {
+    if (!isDragging) return;
+    const currentX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+    setDeltaX(currentX - startX);
+  };
+
+  const onPointerUp = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    const threshold = 70; // px to consider a swipe
+    if (deltaX > threshold) {
+      // swipe right -> previous
+      setCurrent((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+    } else if (deltaX < -threshold) {
+      // swipe left -> next
+      setCurrent((prev) => (prev + 1) % heroSlides.length);
+    }
+    setDeltaX(0);
+  };
+
   const slide = heroSlides[current];
 
   return (
-    <section className="relative bg-gradient-to-br from-gray-500 to-black py-16 md:py-24 lg:py-32 flex flex-col items-center justify-center text-center overflow-hidden min-h-[420px]">
+    <section
+      className="relative bg-gradient-to-br from-gray-500 to-black py-16 md:py-24 lg:py-32 flex flex-col items-center justify-center text-center overflow-hidden min-h-[420px]"
+      onMouseDown={onPointerDown}
+      onMouseMove={onPointerMove}
+      onMouseUp={onPointerUp}
+      onMouseLeave={onPointerUp}
+      onTouchStart={onPointerDown}
+      onTouchMove={onPointerMove}
+      onTouchEnd={onPointerUp}
+      role="region"
+      aria-label="Featured products slider"
+      style={{ touchAction: 'pan-y' }}
+    >
       <img
         src={slide.image}
         alt={slide.title}
