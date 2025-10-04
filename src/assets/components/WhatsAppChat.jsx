@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const WHATSAPP_NUMBER = '2348029580850'; // Replace with your real WhatsApp number (in international format, no +)
-const WHATSAPP_MESSAGE = encodeURIComponent('Hello Posh Choice Store!\nI would like to make an enquiry about yourproducts.');
+const WHATSAPP_NUMBER = '2348157574797'; // Replace with your real WhatsApp number (in international format, no +)
+const WHATSAPP_MESSAGE = encodeURIComponent('Hello Posh Choice!\nI would like to make an enquiry about your products.');
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`;
 
 function WhatsAppChat() {

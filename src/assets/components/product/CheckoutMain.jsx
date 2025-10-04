@@ -102,6 +102,8 @@ const CheckoutMain = () => {
   } = useMutation({
     mutationFn: createOrderApi,
     onSuccess: (orderResponse) => {
+      // ensure submitting flag is reset
+      setIsSubmitting(false);
       clearCart();
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       queryClient.invalidateQueries({ queryKey: ['myOrders'] });
@@ -112,8 +114,13 @@ const CheckoutMain = () => {
     },
     onError: (err) => {
       console.error("Checkout mutation error:", err.message);
+      // Reset submitting state on error
+      setIsSubmitting(false);
     },
   });
+
+  // Local submitting state to ensure button shows spinner reliably across react-query transitions
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = () => {
     const errors = {};
@@ -208,6 +215,7 @@ const CheckoutMain = () => {
       totalPrice: totalAmount,
     };
 
+    setIsSubmitting(true);
     mutate(orderData);
   };
 
@@ -281,7 +289,7 @@ const CheckoutMain = () => {
   }
 
   // WhatsApp order message and number
-  const whatsappNumber = "2348029580850";
+  const whatsappNumber = "2348157574797"; // Posh Choice WhatsApp number
   const orderLines = cart.items.map(item => `• ${item.name} x${item.quantity} @ ${formatPrice(parseFloat(item.price))} = ${formatPrice(parseFloat(item.price) * item.quantity)}`);
   const subtotalLine = `Subtotal: ${formatPrice(subtotal)}`;
   const shippingLine = `Shipping: ${formatPrice(estimatedShipping)}`;
@@ -290,7 +298,7 @@ const CheckoutMain = () => {
   const addressLine = `Shipping Address:\n${shippingAddress.fullName}\n${shippingAddress.address1}${shippingAddress.address2 ? ", " + shippingAddress.address2 : ""}\n${shippingAddress.city}, ${shippingAddress.state}, ${shippingAddress.zipCode}\n${shippingAddress.country}\n\nNOTE: ${shippingAddress.note || 'None'}`;
   const contactLine = user && user.email ? `Email: ${user.email}` : '';
   const whatsappOrderMessage =
-    `I'd like to place an order on Posh Choice Store:\n\n` +
+    `I would like to place an order on Posh Choice:\n\n` +
     orderLines.join("\n") +
     `\n\n${subtotalLine}\n${shippingLine}\n${taxLine}\n${totalLine}\n\n${addressLine}` +
     (contactLine ? `\n${contactLine}` : '');
@@ -382,7 +390,7 @@ const CheckoutMain = () => {
 
           <div>
               <h2 className="text-2xl font-semibold text-gray-800 mb-6 border-b pb-3">Payment Method</h2>
-              <div clName="space-y-3">
+              <div className="space-y-3">
                 <label className="flex items-center">
                   <input
                     type="radio"
@@ -524,8 +532,22 @@ const CheckoutMain = () => {
           <h2 className="text-2xl font-semibold text-gray-800 mb-6 border-b pb-3">Order Summary</h2>
 
           <div className="space-y-4 mb-6 max-h-60 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-            {cart.items.map((item, index) => { 
-                const itemKey = (typeof item.productId === 'string' && item.productId) ? item.productId : (typeof item.productId === 'object' && item.productId !== null && item.productId._id) ? item.productId._id : `${item.name || 'unknown'}-${index}`;
+            {cart.items.map((item, index) => {
+                // Helper to derive a stable string key for each cart item
+                const getItemKey = (it, idx) => {
+                  if (!it) return `item-${idx}`;
+                  const pid = it.productId;
+                  if (typeof pid === 'string' && pid.trim()) return String(pid);
+                    if (pid && typeof pid === 'object') {
+                    if (pid._id) return String(pid._id);
+                    if (pid.id) return String(pid.id);
+                    if (pid.slug) return String(pid.slug);
+                    try { return JSON.stringify(pid); } catch { return `${it.name || 'unknown'}-${idx}`; }
+                  }
+                  return `${it.name || 'unknown'}-${idx}`;
+                };
+
+                const itemKey = getItemKey(item, index) + `-${index}`; // append index to guarantee uniqueness
                 return (
                   <div key={itemKey} className="flex items-center justify-between text-sm text-gray-700">
                     <div className="flex items-center space-x-2">
@@ -565,9 +587,10 @@ const CheckoutMain = () => {
 
           <button
             type="submit"
+            disabled={isLoading || isSubmitting}
             className="w-full mt-8 bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-md text-center transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            {isLoading ? (
+            {(isLoading || isSubmitting) ? (
               <>
                 <FaSpinner className="animate-spin" /> Processing...
               </>
