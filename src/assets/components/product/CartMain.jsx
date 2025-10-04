@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context-api/cart/UseCart';
 import { FaPlus, FaMinus, FaTrash, FaShoppingCart, FaSpinner, FaSadTear } from 'react-icons/fa';
+import whatsapp from '../../images/whatsapp.svg';
 
 const CartMain = () => {
   // Destructure values and functions from the CartContext
@@ -53,11 +54,6 @@ const CartMain = () => {
       clearCart();
     }
   };
-
-  // const handleGoToCheckout = () => {
-  //   Navigate('/app/checkout');
-  //   addToCart(product._id, quantity);
-  // };
 
   // Render loading state
   if (loading) {
@@ -237,6 +233,27 @@ const CartMain = () => {
             </div>
             <p className="text-sm text-gray-600 mb-6">Shipping and taxes calculated at checkout.</p>
           </div>
+          {/* Order via WhatsApp - prefill cart summary */}
+          {(() => {
+            const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '2348157574797';
+            const itemsText = (cart.items || []).map(i => `${i.name} x${i.quantity} @ ${formatPrice(i.price)} = ${formatPrice(i.price * i.quantity)}`).join('%0A');
+            const totalText = `Total: ${formatPrice(cartSubtotal)}`;
+            const message = `I would like to place an order:%0A%0A${itemsText}%0A%0A${totalText}`;
+            const waLink = `https://wa.me/${whatsappNumber}?text=${message}`;
+            return (
+              <a
+                href={waLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full mb-4 md:mb-0 inline-flex items-center justify-center gap-2 p-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md transition duration-200"
+                title="Order via WhatsApp"
+              >
+                <img src={whatsapp} alt="WhatsApp" className="h-4 w-4" />
+                Order via WhatsApp
+              </a>
+            );
+          })()}
+
           <Link
             to="/app/checkout"
             className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-md text-center transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center gap-2"
