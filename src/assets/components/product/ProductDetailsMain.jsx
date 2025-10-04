@@ -7,6 +7,7 @@ import { useCart } from '../../context-api/cart/UseCart';
 import { FaStar, FaStarHalfAlt, FaRegStar, FaShoppingCart, FaHeart, FaShare, FaTags, FaSpinner, FaExpand } from 'react-icons/fa';
 import Lightbox from 'yet-another-react-lightbox';
 import 'yet-another-react-lightbox/styles.css';
+import whatsapp from '../../images/whatsapp.svg';
 
 const ProductDetailsMain = () => {
   const { slug } = useParams();
@@ -287,6 +288,7 @@ const ProductDetailsMain = () => {
                   >
                     <FaExpand className="text-gray-700 text-lg" />
                   </button>
+                  {/* (WhatsApp button moved below to the Add to Cart area) */}
                 </>
               ) : (
                 <img
@@ -492,6 +494,31 @@ const ProductDetailsMain = () => {
                 </div>
 
                 <div className="flex space-x-4">
+                  {/* WhatsApp order link placed before Add to Cart */}
+                  {(() => {
+                    const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '2348157574797';
+                    const productUrl = `${window.location.origin}/app/product/${product.slug}`;
+                    const unitPrice = formatPrice(product.price);
+                    const totalPrice = formatPrice(product.price * quantity);
+                    const buyerInfo = user && user.email ? `\nEmail: ${user.email}` : '';
+                    const messageText = `I would like to order:%0A%0AProduct: ${product.name}%0AQuantity: ${quantity}%0AUnit Price: ${unitPrice}%0ATotal: ${totalPrice}%0A%0AProduct Link: ${productUrl}${buyerInfo}`;
+                    const waLink = `https://wa.me/${whatsappNumber}?text=${messageText}`;
+                    return (
+                      <a
+                        href={waLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-3 border border-green-300 rounded-md bg-green-600 text-white hover:bg-green-700 flex items-center gap-2 mb-2"
+                        title="Order via WhatsApp"
+                      >
+                        <img src={whatsapp} alt="WhatsApp" className="h-4 w-4" />
+                        Order Via WhatsApp
+                      </a>
+                    );
+                  })()}
+                </div>
+
+                <div className="flex space-x-4">
                   <button
                     type="button"
                     onClick={handleAddToCart}
@@ -511,13 +538,7 @@ const ProductDetailsMain = () => {
                   >
                     <FaHeart />
                   </button>
-
-                  <button
-                    type="button"
-                    className="p-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                  >
-                    <FaShare />
-                  </button>
+                  
                 </div>
               </div>
             )}
