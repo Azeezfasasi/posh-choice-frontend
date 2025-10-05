@@ -30,10 +30,8 @@ function Home() {
     <FeaturedProduct />
     <RecentProduct />
     <KitchenEquipmentProducts />
-    {/* <HouseholdPlasticsProducts /> */}
     <GiftItemsProducts />
     <KitchenAppliancesProducts />
-    {/* <PlasticProducts /> */}
     <RecentlyViewedProducts />
     <Footer />
     <WhatsAppChat />

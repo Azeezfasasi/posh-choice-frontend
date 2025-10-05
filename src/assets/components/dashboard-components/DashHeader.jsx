@@ -12,7 +12,7 @@ import TagIcon from '@rsuite/icons/Tag';
 import MessageIcon from '@rsuite/icons/Message';
 import GearIcon from '@rsuite/icons/Gear';
 import { Sidenav, Nav } from 'rsuite';
-import poshchoice2 from '../../images/poshchoice2.png';
+import pclogo3 from '../../images/pclogo3.png';
 
 function DashHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -81,9 +81,9 @@ function DashHeader() {
       {/* Logo */}
       <Link to="/" className="flex items-center space-x-2">
         <img
-          src={poshchoice2}
+          src={pclogo3}
           alt="logo image"
-          className='w-[90px] h-[40px] md:w-[120px] md:h-[60px]'
+          className='w-[130px] h-[30px] md:w-[180px] md:h-[30px]'
         />
         {/* <h2 className='text-xl font-bold text-purple-500'>Posh Choice Store</h2> */}
       </Link>

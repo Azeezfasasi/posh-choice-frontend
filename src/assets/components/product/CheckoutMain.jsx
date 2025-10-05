@@ -431,9 +431,9 @@ const CheckoutMain = () => {
                 <div className="mt-4">
                   <p className="text-sm text-gray-700 mb-2">
                     Please transfer the total amount to:<br />
-                    <b>Bank Name:</b> Example Bank<br />
-                    <b>Account Number:</b> 1234567890<br />
-                    <b>Account Name:</b> Posh Choice Store<br />
+                    <b>Bank Name:</b> Monipoint<br />
+                    <b>Account Number:</b> 6974818482<br />
+                    <b>Account Name:</b> Alimot Jimoh<br />
                   </p>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Bank Transfer Reference / Proof (optional)

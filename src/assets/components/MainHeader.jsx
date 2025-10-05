@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import accountprofile from '../images/accountprofile.svg'
+import pclogo3 from '../images/pclogo3.png'
 import CartIcon from './dashboard-components/CartIcon';
 import WishlistIcon from './dashboard-components/Wishlisticon';
-import poshchoice2 from '../images/poshchoice2.png';
 import ProductSearch from './product/ProductSearch';
 
 function MainHeader() {
@@ -15,9 +15,9 @@ function MainHeader() {
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2">
           <img
-            src={poshchoice2}
+            src={pclogo3}
             alt="logo image"
-            className='w-[100px] h-[50px] md:w-[120px] md:h-[60px]'
+            className='w-[130px] h-[30px] md:w-[180px] md:h-[30px]'
           />
           {/* <h2 className='text-xl font-bold text-purple-500'>Posh Choice Store</h2> */}
         </Link>
