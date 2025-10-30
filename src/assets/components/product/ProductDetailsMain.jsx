@@ -410,14 +410,14 @@ const ProductDetailsMain = () => {
                   </>
                 )}
 
-                {(product.dimensions && (product.dimensions.length !== undefined || product.dimensions.width !== undefined || product.dimensions.height !== undefined)) && (
+                {/* {(product.dimensions && (product.dimensions.length !== undefined || product.dimensions.width !== undefined || product.dimensions.height !== undefined)) && (
                   <>
                     <dt className="text-sm font-medium text-gray-500">Dimensions</dt>
                     <dd className="text-sm text-gray-900">
                       {(product.dimensions.length || 0)} × {(product.dimensions.width || 0)} × {(product.dimensions.height || 0)} cm
                     </dd>
                   </>
-                )}
+                )} */}
               </dl>
             </div>
 
