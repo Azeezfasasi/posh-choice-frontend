@@ -127,15 +127,17 @@ export const updateOrderPaymentStatus = async (orderId, status, token) => {
 };
 
 // Upload Bank Transfer payment proof
-export const uploadPaymentProof = async (orderId, proofUrl, token) => {
+export const uploadPaymentProof = async (orderId, file, token) => {
   try {
+    const formData = new FormData();
+    formData.append('proof', file);
+
     const response = await fetch(`${API_BASE_URL}/orders/${orderId}/upload-payment-proof`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ proofUrl }),
+      body: formData,
     });
     if (!response.ok) {
       const error = await response.json();

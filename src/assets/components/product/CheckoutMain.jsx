@@ -6,7 +6,6 @@ import { useUser } from '../../context-api/user-context/UseUser';
 import { FaSpinner, FaShoppingCart, FaCheckCircle, FaExclamationCircle, FaUpload, FaTimes, FaCheck } from 'react-icons/fa';
 import { API_BASE_URL } from '../../../config/api';
 import { fetchDeliveryLocations } from '../../../services/deliveryLocationApi';
-import { uploadToCloudinary } from '../../../utils/cloudinaryUpload';
 import { uploadPaymentProof } from '../../../services/orderApi';
 
 const CheckoutMain = () => {
@@ -126,7 +125,7 @@ const CheckoutMain = () => {
     }
   };
 
-  // Upload proof to Cloudinary
+  // Upload proof to Backend (which will handle Cloudinary upload)
   const handleProofUpload = async () => {
     if (!proofFile) {
       setProofError('Please select a file first');
@@ -137,13 +136,18 @@ const CheckoutMain = () => {
     setProofError(null);
 
     try {
-      const url = await uploadToCloudinary(proofFile, 'poshchoice/payment-proofs');
-      setProofUrl(url);
+      console.log('Starting file upload to backend...', { fileName: proofFile.name, fileSize: proofFile.size, fileType: proofFile.type });
+      
+      // Just store the file - it will be uploaded after order is created
+      setProofUrl(proofFile); // Store the file object
       setProofFile(null);
-      // Keep preview visible after successful upload
+      setProofPreview(null);
+      
+      console.log('File ready for upload after order creation');
     } catch (error) {
-      setProofError(error.message || 'Failed to upload proof');
-      console.error('Proof upload error:', error);
+      const errorMsg = error.message || 'Failed to prepare proof for upload';
+      console.error('Proof preparation error:', error);
+      setProofError(errorMsg);
     } finally {
       setProofUploading(false);
     }
@@ -156,6 +160,9 @@ const CheckoutMain = () => {
     setProofFile(null);
     setProofError(null);
   };
+
+  // Check if proof is ready (File object or URL string)
+  const isProofReady = proofUrl && (proofUrl instanceof File || typeof proofUrl === 'string');
 
   const createOrderApi = async (orderData) => {
     if (!token) {
@@ -548,12 +555,12 @@ const CheckoutMain = () => {
                 <div className="mt-4 border border-blue-200 bg-blue-50 rounded-lg p-4 space-y-4">
                   <div>
                     <h3 className="font-semibold text-gray-800 mb-2">Bank Transfer Details</h3>
-                    <p className="text-sm text-gray-700 space-y-1">
+                    <div className="text-sm text-gray-700 space-y-1">
                       <p><b>Bank Name:</b> Monipoint</p>
                       <p><b>Account Number:</b> 6974818482</p>
                       <p><b>Account Name:</b> Alimot Jimoh</p>
                       <p className="text-red-600 font-semibold mt-2">Total Amount to Transfer: ₦{totalAmount.toLocaleString()}</p>
-                    </p>
+                    </div>
                   </div>
 
                   {/* Bank Reference Field */}
@@ -626,11 +633,11 @@ const CheckoutMain = () => {
                           >
                             {proofUploading ? (
                               <>
-                                <FaSpinner className="animate-spin" /> Uploading...
+                                <FaSpinner className="animate-spin" /> Preparing...
                               </>
                             ) : (
                               <>
-                                <FaUpload /> Upload Proof
+                                <FaCheck /> Confirm Proof
                               </>
                             )}
                           </button>
@@ -644,13 +651,19 @@ const CheckoutMain = () => {
                         )}
                       </div>
                     ) : (
-                      /* Proof Uploaded Successfully */
+                      /* Proof Ready or Uploaded */
                       <div className="p-4 bg-green-100 border border-green-300 rounded-lg flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <FaCheck className="text-green-600 text-xl" />
                           <div>
-                            <p className="text-green-800 font-semibold">Proof Uploaded Successfully!</p>
-                            <p className="text-green-700 text-sm">Your payment proof has been received.</p>
+                            <p className="text-green-800 font-semibold">
+                              {proofUrl instanceof File ? 'Proof Ready for Upload!' : 'Proof Uploaded Successfully!'}
+                            </p>
+                            <p className="text-green-700 text-sm">
+                              {proofUrl instanceof File 
+                                ? `File "${proofUrl.name}" will be uploaded when you place the order.`
+                                : 'Your payment proof has been received by our team.'}
+                            </p>
                           </div>
                         </div>
                         <button
