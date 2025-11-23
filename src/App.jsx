@@ -52,6 +52,7 @@ import SendNewsletter from './app/SendNewsletter';
 import AllNewsletter from './app/AllNewsletter';
 import NewsletterSubscribers from './app/NewsletterSubscribers';
 import ProductsByCategory from './app/ProductsByCategory';
+import DeliveryLocation from './app/DeliveryLocation';
 
 function App() {
   return (
@@ -108,6 +109,8 @@ function App() {
                     <Route path="/app/sendnewsletter" element={<SendNewsletter />} />
                     <Route path="/app/allnewsletter" element={<AllNewsletter />} />
                     <Route path="/app/Newslettersubscribers" element={<NewsletterSubscribers />} />
+                    <Route path="/app/Newslettersubscribers" element={<NewsletterSubscribers />} />
+                    <Route path="/app/delivery-location" element={<DeliveryLocation />} />
                   </Route>
                 </Routes>
               </CartProvider>

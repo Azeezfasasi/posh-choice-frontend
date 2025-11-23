@@ -5,6 +5,7 @@ import { useCart } from '../../context-api/cart/UseCart';
 import { useUser } from '../../context-api/user-context/UseUser';
 import { FaSpinner, FaShoppingCart, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { API_BASE_URL } from '../../../config/api';
+import { fetchDeliveryLocations } from '../../../services/deliveryLocationApi';
 
 const CheckoutMain = () => {
   const navigate = useNavigate();
@@ -12,9 +13,11 @@ const CheckoutMain = () => {
 
   const { cart, loading: cartLoading, formatPrice, clearCart } = useCart();
   const { user, token } = useUser();
-  const [showPaymentFields, setShowPaymentFields] = useState(false);
+  const [showPaymentFields] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
   const [bankReference, setBankReference] = useState('');
+  const [deliveryLocations, setDeliveryLocations] = useState([]);
+  const [selectedDeliveryLocation, setSelectedDeliveryLocation] = useState(null);
 
   const [shippingAddress, setShippingAddress] = useState({
     fullName: '',
@@ -36,6 +39,25 @@ const CheckoutMain = () => {
 
   const [validationErrors, setValidationErrors] = useState({});
 
+  // Fetch delivery locations on mount
+  useEffect(() => {
+    const loadDeliveryLocations = async () => {
+      try {
+        const locations = await fetchDeliveryLocations();
+        setDeliveryLocations(locations);
+        // Set first location as default
+        if (locations.length > 0) {
+          setSelectedDeliveryLocation(locations[0]._id);
+        }
+      } catch (error) {
+        console.error('Error loading delivery locations:', error);
+        setValidationErrors(prev => ({ ...prev, locations: 'Failed to load delivery locations' }));
+      }
+    };
+
+    loadDeliveryLocations();
+  }, []);
+
   useEffect(() => {
     if (user && user.shippingAddress) {
       setShippingAddress({
@@ -54,7 +76,11 @@ const CheckoutMain = () => {
   }, [user]);
 
   const subtotal = cart?.items?.reduce((acc, item) => acc + (parseFloat(item.price) * item.quantity), 0) || 0;
-  const estimatedShipping = 1500;
+  
+  // Get shipping amount based on selected delivery location
+  const selectedLocation = deliveryLocations.find(loc => loc._id === selectedDeliveryLocation);
+  const estimatedShipping = selectedLocation?.shippingAmount || 0;
+  
   const taxRate = 0;
   const taxAmount = subtotal * taxRate;
   const totalAmount = subtotal + estimatedShipping + taxAmount;
@@ -309,6 +335,7 @@ const CheckoutMain = () => {
 
       <form onSubmit={handleSubmitCheckout} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-white shadow-lg rounded-lg p-6 space-y-8">
+
           <div>
             <h2 className="text-2xl font-semibold text-gray-800 mb-6 border-b pb-3">Shipping Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -356,14 +383,6 @@ const CheckoutMain = () => {
                   required
                 />
               </div>
-              {/* <div>
-                <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">Zip / Postal Code (Optional)</label>
-                <input
-                  type="text" id="zipCode" name="zipCode"
-                  value={shippingAddress.zipCode} onChange={handleShippingChange}
-                  className="w-full border border-gray-300'rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div> */}
               <div>
                 <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">Country*</label>
                 <select
@@ -385,7 +404,29 @@ const CheckoutMain = () => {
                 <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">Additional Note (Optional) - <span className='text-purple-500'>You can add any additional information for the seller here.</span></label>
                 <textarea name="note" id="note" onChange={handleShippingChange} placeholder='Write a message for the seller here.' className="w-full border border-gray-300'rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
               </div>
-            </div>    
+            </div>
+
+            {/* Delivery location */}
+            <div className='mt-4 lg:mt-0'>
+              <h2 className="text-2xl font-semibold text-gray-800 mb-6 border-b pb-3">Delivery Location</h2>
+              <div>
+                <label htmlFor="deliveryLocation" className="block text-sm font-medium text-gray-700 mb-2">Select Delivery Location*</label>
+                <select
+                  id="deliveryLocation"
+                  name="deliveryLocation"
+                  value={selectedDeliveryLocation || ''}
+                  onChange={(e) => setSelectedDeliveryLocation(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md shadow-sm px-4 py-3 focus:ring-purple-500 focus:border-purple-500 text-gray-700"
+                  required
+                >
+                  {deliveryLocations.map((location) => (
+                    <option key={location._id} value={location._id}>
+                      {location.name} - ₦{location.shippingAmount.toLocaleString()}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
           <div>

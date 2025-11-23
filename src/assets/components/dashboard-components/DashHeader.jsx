@@ -31,6 +31,7 @@ function DashHeader() {
     '/app/addproduct': { key: '3-2', parent: '3' },
     '/app/productcategories': { key: '3-3', parent: '3' },
     '/app/addproductcategory': { key: '3-4', parent: '3' },
+    '/app/delivery-location': { key: '3-5', parent: '3' },
     '/app/quote': { key: '4', parent: null },
     '/app/blogposts': { key: '5-1', parent: '5' },
     '/app/addnewpost': { key: '5-2', parent: '5' },
@@ -211,6 +212,7 @@ function DashHeader() {
                         <Nav.Item eventKey="3-2" as={Link} to="/app/addproduct">Add Products</Nav.Item>
                         <Nav.Item eventKey="3-3" as={Link} to="/app/productcategories">Product Categories</Nav.Item>
                         <Nav.Item eventKey="3-4" as={Link} to="/app/addproductcategory">Add Product Category</Nav.Item>
+                        <Nav.Item eventKey="3-5" as={Link} to="/app/delivery-location">Delivery Location</Nav.Item>
                     </Nav.Menu>
                     )}
                     {(isSuperAdmin || isAdmin) && (
