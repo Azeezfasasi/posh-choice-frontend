@@ -22,6 +22,17 @@ const fetchUserOrderById = async (id, token) => {
 function ViewUserOrderDetailsMain() {
   const { id } = useParams();
   const { token } = useUser();
+
+  // Handle PDF download with proper filename
+  const handleDownloadPDF = (proofUrl) => {
+    const link = document.createElement('a');
+    link.href = proofUrl;
+    link.download = `payment-proof-${id}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const {
     data: order,
     isLoading,
@@ -145,23 +156,32 @@ function ViewUserOrderDetailsMain() {
                 <div className="text-4xl">📄</div>
                 <div className="flex-1">
                   <p className="font-semibold text-gray-800">Payment Receipt (PDF)</p>
-                  <a
-                    href={order.bankTransferProof}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-purple-600 hover:text-purple-800 hover:underline text-sm"
-                  >
-                    View PDF
-                  </a>
+                  <p className="text-xs text-gray-500 mb-2">Uploaded on: {new Date(order.paymentProofUploadedAt).toLocaleString()}</p>
+                  <div className="flex gap-2 flex-wrap">
+                    <a
+                      href={order.bankTransferProof}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-purple-600 hover:text-purple-800 hover:underline text-sm font-medium"
+                    >
+                      View PDF
+                    </a>
+                    <button
+                      onClick={() => handleDownloadPDF(order.bankTransferProof)}
+                      className="text-purple-600 hover:text-purple-800 hover:underline text-sm font-medium"
+                    >
+                      Download PDF
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
               <div>
-                <p className="text-sm text-gray-600 mb-2">Uploaded on: {new Date(order.paymentProofUploadedAt).toLocaleString()}</p>
+                <p className="text-sm text-gray-600 mb-3">Uploaded on: {new Date(order.paymentProofUploadedAt).toLocaleString()}</p>
                 <img
                   src={order.bankTransferProof}
                   alt="Payment Proof"
-                  className="max-w-xs max-h-96 rounded-md border border-gray-300"
+                  className="max-w-xs max-h-96 rounded-md border border-gray-300 shadow-sm"
                 />
               </div>
             )}

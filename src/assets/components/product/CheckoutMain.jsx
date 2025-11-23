@@ -127,7 +127,10 @@ const CheckoutMain = () => {
 
   // Upload proof to Backend (which will handle Cloudinary upload)
   const handleProofUpload = async () => {
+    console.log('handleProofUpload called', { proofFile, proofUrl });
+    
     if (!proofFile) {
+      console.warn('No proof file selected');
       setProofError('Please select a file first');
       return;
     }
@@ -136,14 +139,14 @@ const CheckoutMain = () => {
     setProofError(null);
 
     try {
-      console.log('Starting file upload to backend...', { fileName: proofFile.name, fileSize: proofFile.size, fileType: proofFile.type });
+      console.log('Confirming file for upload...', { fileName: proofFile.name, fileSize: proofFile.size, fileType: proofFile.type });
       
-      // Just store the file - it will be uploaded after order is created
-      setProofUrl(proofFile); // Store the file object
-      setProofFile(null);
-      setProofPreview(null);
+      // Store the file - it will be uploaded after order is created
+      setProofUrl(proofFile); // Store the file object as proofUrl
+      setProofFile(null); // Clear the file input
+      // Keep proofPreview visible to show the confirmed file
       
-      console.log('File ready for upload after order creation');
+      console.log('File confirmed and ready for upload after order creation', { newProofUrl: proofFile });
     } catch (error) {
       const errorMsg = error.message || 'Failed to prepare proof for upload';
       console.error('Proof preparation error:', error);
@@ -236,7 +239,10 @@ const CheckoutMain = () => {
 
     // Validate Bank Transfer proof upload
     if (paymentMethod === 'Bank Transfer' && !proofUrl) {
+      console.warn('Bank Transfer selected but no proof URL', { paymentMethod, proofUrl });
       errors.proof = 'Payment proof is required for Bank Transfer. Please upload your proof of payment.';
+    } else if (paymentMethod === 'Bank Transfer' && proofUrl) {
+      console.log('Bank Transfer with valid proof', { proofUrl, isFile: proofUrl instanceof File });
     }
 
     if (showPaymentFields) {
@@ -637,7 +643,7 @@ const CheckoutMain = () => {
                               </>
                             ) : (
                               <>
-                                <FaCheck /> Confirm Proof
+                                <FaCheck /> Click here to Confirm Proof
                               </>
                             )}
                           </button>

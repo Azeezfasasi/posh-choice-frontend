@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useUser } from '../../context-api/user-context/UseUser';
 import { useCart } from '../../context-api/cart/UseCart';
-import { FaSpinner, FaEdit, FaTrash, FaEye, FaSearch, FaTimes, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+import { FaSpinner, FaEdit, FaTrash, FaEye, FaSearch, FaTimes, FaCheckCircle, FaExclamationCircle, FaImage, FaDownload } from 'react-icons/fa';
+import { X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { API_BASE_URL } from '../../../config/api';
 
@@ -12,6 +13,17 @@ const AdminAllOrderMain = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [selectedOrderForDetail, setSelectedOrderForDetail] = useState(null);
+
+  // Handle PDF download
+  const handleDownloadPDF = (proofUrl, orderId) => {
+    const link = document.createElement('a');
+    link.href = proofUrl;
+    link.download = `payment-proof-${orderId}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Check if the user is an admin
   const isAdmin = user && (user.role === 'admin' || user.role === 'super admin'); // Adjust based on your user role structure
@@ -292,9 +304,12 @@ const AdminAllOrderMain = () => {
                       </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link to={`/app/vieworderdetails/${order._id}`} className="text-purple-500 hover:text-purple-600 mr-3">
+                    <button
+                      onClick={() => setSelectedOrderForDetail(order)}
+                      className="text-purple-500 hover:text-purple-600 mr-3"
+                    >
                       <FaEye className="inline-block" /> View
-                    </Link>
+                    </button>
                     {/* Add delete button (use with caution in real apps, confirm delete) */}
                     <button
                       onClick={() => {
@@ -312,6 +327,174 @@ const AdminAllOrderMain = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Order Detail Modal */}
+      {selectedOrderForDetail && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6 flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Order Details - {selectedOrderForDetail.orderNumber}</h2>
+              <button
+                onClick={() => setSelectedOrderForDetail(null)}
+                className="text-2xl hover:text-gray-200 transition"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-6">
+              {/* Customer Info */}
+              <div className="border-b pb-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">Customer Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-gray-500 font-medium">Name</p>
+                    <p className="text-gray-900">{selectedOrderForDetail.userId?.name || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 font-medium">Email</p>
+                    <p className="text-gray-900">{selectedOrderForDetail.userId?.email || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 font-medium">Phone</p>
+                    <p className="text-gray-900">{selectedOrderForDetail.userId?.phone || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 font-medium">Order Date</p>
+                    <p className="text-gray-900">{new Date(selectedOrderForDetail.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Order Status */}
+              <div className="border-b pb-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">Order Status</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-gray-500 font-medium">Order Status</p>
+                    <p className={`font-semibold ${
+                      selectedOrderForDetail.status === 'Delivered' ? 'text-green-600' :
+                      selectedOrderForDetail.status === 'Shipped' ? 'text-blue-600' :
+                      selectedOrderForDetail.status === 'Processing' ? 'text-yellow-600' :
+                      selectedOrderForDetail.status === 'Cancelled' ? 'text-red-600' :
+                      'text-gray-600'
+                    }`}>
+                      {selectedOrderForDetail.status}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 font-medium">Payment Status</p>
+                    <p className={`font-semibold ${
+                      selectedOrderForDetail.paymentStatus === 'Paid' ? 'text-green-600' :
+                      selectedOrderForDetail.paymentStatus === 'Processing' ? 'text-yellow-600' :
+                      'text-red-600'
+                    }`}>
+                      {selectedOrderForDetail.paymentStatus}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 font-medium">Payment Method</p>
+                    <p className="text-gray-900 font-semibold">{selectedOrderForDetail.paymentMethod || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 font-medium">Total Amount</p>
+                    <p className="text-gray-900 font-semibold">{formatPrice(selectedOrderForDetail.totalPrice)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Proof Section - Bank Transfer */}
+              {selectedOrderForDetail.paymentMethod === 'Bank Transfer' && selectedOrderForDetail.bankTransferProof && (
+                <div className="border-b pb-4 bg-blue-50 p-4 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <FaImage className="text-purple-500" /> Payment Proof
+                  </h3>
+                  <div className="bg-white p-4 rounded-lg border border-blue-200">
+                    {selectedOrderForDetail.bankTransferProof.toLowerCase().endsWith('.pdf') ? (
+                      <div className="flex items-center gap-4">
+                        <div className="text-4xl">📄</div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-800">Payment Receipt (PDF)</p>
+                          <p className="text-xs text-gray-500 mb-3">Uploaded on: {new Date(selectedOrderForDetail.paymentProofUploadedAt).toLocaleString()}</p>
+                          <div className="flex gap-3 flex-wrap">
+                            <a
+                              href={selectedOrderForDetail.bankTransferProof}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-md text-sm font-medium transition"
+                            >
+                              <FaEye className="text-sm" /> View PDF
+                            </a>
+                            <button
+                              onClick={() => handleDownloadPDF(selectedOrderForDetail.bankTransferProof, selectedOrderForDetail._id)}
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm font-medium transition"
+                            >
+                              <FaDownload className="text-sm" /> Download PDF
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <p className="text-sm text-gray-600 mb-3">Uploaded on: {new Date(selectedOrderForDetail.paymentProofUploadedAt).toLocaleString()}</p>
+                        <img
+                          src={selectedOrderForDetail.bankTransferProof}
+                          alt="Payment Proof"
+                          className="w-full max-w-sm max-h-96 rounded-md border border-gray-300 shadow-md mx-auto"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Items Summary */}
+              <div className="border-b pb-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">Order Items</h3>
+                <div className="space-y-2 text-sm">
+                  {selectedOrderForDetail.items?.map((item, index) => (
+                    <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                      <div>
+                        <p className="font-medium text-gray-900">{item.productName || item.name}</p>
+                        <p className="text-gray-600">Qty: {item.quantity}</p>
+                      </div>
+                      <p className="font-semibold text-gray-900">{formatPrice(item.price * item.quantity)}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Shipping Address */}
+              <div className="border-b pb-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">Shipping Address</h3>
+                <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700">
+                  <p>{selectedOrderForDetail.shippingAddress?.street || 'N/A'}</p>
+                  <p>{selectedOrderForDetail.shippingAddress?.city || 'N/A'}, {selectedOrderForDetail.shippingAddress?.state || 'N/A'} {selectedOrderForDetail.shippingAddress?.zipCode || 'N/A'}</p>
+                  <p>{selectedOrderForDetail.shippingAddress?.country || 'N/A'}</p>
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <div className="flex justify-end gap-3">
+                <Link
+                  to={`/app/vieworderdetails/${selectedOrderForDetail._id}`}
+                  className="px-6 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-md font-medium transition"
+                >
+                  View Full Details
+                </Link>
+                <button
+                  onClick={() => setSelectedOrderForDetail(null)}
+                  className="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md font-medium transition"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
