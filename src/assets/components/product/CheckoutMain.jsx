@@ -3,9 +3,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useMutation, QueryClient, useQueryClient } from '@tanstack/react-query';
 import { useCart } from '../../context-api/cart/UseCart';
 import { useUser } from '../../context-api/user-context/UseUser';
-import { FaSpinner, FaShoppingCart, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+import { FaSpinner, FaShoppingCart, FaCheckCircle, FaExclamationCircle, FaUpload, FaTimes, FaCheck } from 'react-icons/fa';
 import { API_BASE_URL } from '../../../config/api';
 import { fetchDeliveryLocations } from '../../../services/deliveryLocationApi';
+import { uploadToCloudinary } from '../../../utils/cloudinaryUpload';
+import { uploadPaymentProof } from '../../../services/orderApi';
 
 const CheckoutMain = () => {
   const navigate = useNavigate();
@@ -18,6 +20,13 @@ const CheckoutMain = () => {
   const [bankReference, setBankReference] = useState('');
   const [deliveryLocations, setDeliveryLocations] = useState([]);
   const [selectedDeliveryLocation, setSelectedDeliveryLocation] = useState(null);
+  
+  // Bank Transfer Proof Upload State
+  const [proofFile, setProofFile] = useState(null);
+  const [proofPreview, setProofPreview] = useState(null);
+  const [proofUrl, setProofUrl] = useState(null);
+  const [proofUploading, setProofUploading] = useState(false);
+  const [proofError, setProofError] = useState(null);
 
   const [shippingAddress, setShippingAddress] = useState({
     fullName: '',
@@ -97,6 +106,57 @@ const CheckoutMain = () => {
     setValidationErrors(prev => ({ ...prev, [name]: '' }));
   }, []);
 
+  // Handle proof file selection
+  const handleProofFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setProofError(null);
+    setProofFile(file);
+
+    // Create preview for images
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setProofPreview(event.target?.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setProofPreview(`📄 ${file.name}`);
+    }
+  };
+
+  // Upload proof to Cloudinary
+  const handleProofUpload = async () => {
+    if (!proofFile) {
+      setProofError('Please select a file first');
+      return;
+    }
+
+    setProofUploading(true);
+    setProofError(null);
+
+    try {
+      const url = await uploadToCloudinary(proofFile, 'poshchoice/payment-proofs');
+      setProofUrl(url);
+      setProofFile(null);
+      // Keep preview visible after successful upload
+    } catch (error) {
+      setProofError(error.message || 'Failed to upload proof');
+      console.error('Proof upload error:', error);
+    } finally {
+      setProofUploading(false);
+    }
+  };
+
+  // Remove uploaded proof
+  const handleRemoveProof = () => {
+    setProofUrl(null);
+    setProofPreview(null);
+    setProofFile(null);
+    setProofError(null);
+  };
+
   const createOrderApi = async (orderData) => {
     if (!token) {
       throw new Error('Authentication token is missing.');
@@ -127,7 +187,18 @@ const CheckoutMain = () => {
     // error,
   } = useMutation({
     mutationFn: createOrderApi,
-    onSuccess: (orderResponse) => {
+    onSuccess: async (orderResponse) => {
+      try {
+        // Upload payment proof if Bank Transfer is selected
+        if (paymentMethod === 'Bank Transfer' && proofUrl && orderResponse.order._id) {
+          await uploadPaymentProof(orderResponse.order._id, proofUrl, token);
+          console.log('Payment proof uploaded successfully for order', orderResponse.order._id);
+        }
+      } catch (proofUploadError) {
+        console.error('Failed to upload payment proof to backend:', proofUploadError);
+        // Don't prevent order success, but log the error
+      }
+
       // ensure submitting flag is reset
       setIsSubmitting(false);
       clearCart();
@@ -155,6 +226,11 @@ const CheckoutMain = () => {
     if (!shippingAddress.city.trim()) errors.city = 'City is required.';
     if (!shippingAddress.state.trim()) errors.state = 'State/Region is required.';
     if (!shippingAddress.country.trim()) errors.country = 'Country is required.';
+
+    // Validate Bank Transfer proof upload
+    if (paymentMethod === 'Bank Transfer' && !proofUrl) {
+      errors.proof = 'Payment proof is required for Bank Transfer. Please upload your proof of payment.';
+    }
 
     if (showPaymentFields) {
       if (!paymentDetails.cardNumber.trim()) errors.cardNumber = 'Card Number is required.';
@@ -469,23 +545,131 @@ const CheckoutMain = () => {
 
               {/* Bank Transfer Fields */}
               {paymentMethod === 'Bank Transfer' && (
-                <div className="mt-4">
-                  <p className="text-sm text-gray-700 mb-2">
-                    Please transfer the total amount to:<br />
-                    <b>Bank Name:</b> Monipoint<br />
-                    <b>Account Number:</b> 6974818482<br />
-                    <b>Account Name:</b> Alimot Jimoh<br />
-                  </p>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Bank Transfer Reference / Proof (optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={bankReference}
-                    onChange={e => setBankReference(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2"
-                    placeholder="Enter your bank transfer reference"
-                  />
+                <div className="mt-4 border border-blue-200 bg-blue-50 rounded-lg p-4 space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-gray-800 mb-2">Bank Transfer Details</h3>
+                    <p className="text-sm text-gray-700 space-y-1">
+                      <p><b>Bank Name:</b> Monipoint</p>
+                      <p><b>Account Number:</b> 6974818482</p>
+                      <p><b>Account Name:</b> Alimot Jimoh</p>
+                      <p className="text-red-600 font-semibold mt-2">Total Amount to Transfer: ₦{totalAmount.toLocaleString()}</p>
+                    </p>
+                  </div>
+
+                  {/* Bank Reference Field */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Bank Transfer Reference (optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={bankReference}
+                      onChange={e => setBankReference(e.target.value)}
+                      className="w-full border border-gray-300 rounded-md shadow-sm px-3 py-2 focus:ring-purple-500 focus:border-purple-500"
+                      placeholder="Enter your bank transfer reference"
+                    />
+                  </div>
+
+                  {/* Proof of Payment Upload */}
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                      <FaUpload className="text-purple-500" /> Upload Proof of Payment
+                    </h3>
+                    <p className="text-xs text-gray-600 mb-3">
+                      Upload a screenshot or receipt of your successful bank transfer (JPEG, PNG, GIF, or PDF - Max 5MB)
+                    </p>
+
+                    {!proofUrl ? (
+                      <div className="space-y-3">
+                        {/* File Upload Input */}
+                        <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 hover:bg-purple-50 transition">
+                          <label className="cursor-pointer flex items-center justify-center gap-2">
+                            <FaUpload className="text-purple-500 text-lg" />
+                            <span className="text-purple-600 font-medium">Click to upload or drag and drop</span>
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/gif,application/pdf"
+                              onChange={handleProofFileChange}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+
+                        {/* File Preview */}
+                        {proofPreview && (
+                          <div className="mt-3 p-3 bg-gray-100 rounded-lg flex items-center justify-between">
+                            {proofPreview.startsWith('📄') ? (
+                              <span className="text-sm text-gray-700">{proofPreview}</span>
+                            ) : (
+                              <img src={proofPreview} alt="Preview" className="h-16 w-16 object-cover rounded" />
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setProofFile(null);
+                                setProofPreview(null);
+                              }}
+                              className="text-red-500 hover:text-red-700 transition"
+                            >
+                              <FaTimes />
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Upload Button */}
+                        {proofFile && !proofUrl && (
+                          <button
+                            type="button"
+                            onClick={handleProofUpload}
+                            disabled={proofUploading}
+                            className="w-full bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-md transition flex items-center justify-center gap-2"
+                          >
+                            {proofUploading ? (
+                              <>
+                                <FaSpinner className="animate-spin" /> Uploading...
+                              </>
+                            ) : (
+                              <>
+                                <FaUpload /> Upload Proof
+                              </>
+                            )}
+                          </button>
+                        )}
+
+                        {/* Error Message */}
+                        {proofError && (
+                          <div className="p-3 bg-red-100 border border-red-300 rounded-lg flex items-center gap-2 text-red-700 text-sm">
+                            <FaExclamationCircle /> {proofError}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      /* Proof Uploaded Successfully */
+                      <div className="p-4 bg-green-100 border border-green-300 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <FaCheck className="text-green-600 text-xl" />
+                          <div>
+                            <p className="text-green-800 font-semibold">Proof Uploaded Successfully!</p>
+                            <p className="text-green-700 text-sm">Your payment proof has been received.</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemoveProof}
+                          className="text-red-500 hover:text-red-700 transition"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Error Message for Missing Proof */}
+                  {validationErrors.proof && (
+                    <div className="p-3 bg-red-100 border border-red-300 rounded-lg flex items-center gap-2 text-red-700 text-sm">
+                      <FaExclamationCircle /> {validationErrors.proof}
+                    </div>
+                  )}
                 </div>
               )}
 

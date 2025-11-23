@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useUser } from '../../context-api/user-context/UseUser';
 import { API_BASE_URL } from '../../../config/api';
-import { FaSpinner, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaSpinner, FaCheckCircle, FaTimesCircle, FaImage } from 'react-icons/fa';
 import back from '../../images/back.svg';
 
 const fetchUserOrderById = async (id, token) => {
@@ -132,6 +132,42 @@ function ViewUserOrderDetailsMain() {
           <p className="text-lg font-bold mt-2">Total: <span className="text-blue-700">₦{order.totalPrice?.toLocaleString() || '0'}</span></p>
         </div>
       </div>
+
+      {/* Bank Transfer Payment Proof */}
+      {order.paymentMethod === 'Bank Transfer' && order.bankTransferProof && (
+        <div className="mb-6 border-t pt-6">
+          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <FaImage className="text-purple-500" /> Payment Proof
+          </h3>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            {order.bankTransferProof.toLowerCase().endsWith('.pdf') ? (
+              <div className="flex items-center gap-4">
+                <div className="text-4xl">📄</div>
+                <div className="flex-1">
+                  <p className="font-semibold text-gray-800">Payment Receipt (PDF)</p>
+                  <a
+                    href={order.bankTransferProof}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-purple-600 hover:text-purple-800 hover:underline text-sm"
+                  >
+                    View PDF
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm text-gray-600 mb-2">Uploaded on: {new Date(order.paymentProofUploadedAt).toLocaleString()}</p>
+                <img
+                  src={order.bankTransferProof}
+                  alt="Payment Proof"
+                  className="max-w-xs max-h-96 rounded-md border border-gray-300"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <div className="flex justify-between mt-8">
         <Link to="/app/userorderdetails" className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-6 rounded-full transition duration-300">Back to My Orders</Link>
       </div>
