@@ -452,7 +452,7 @@ const CheckoutMain = () => {
                     onChange={() => setPaymentMethod('Cash on Delivery')}
                     className="mr-2"
                   />
-                  Payment on Delivery <i className="fa-solid fa-truck-fast ml-1 text-[20px] text-purple-500"></i>
+                  Pick Up <i className="fa-solid fa-truck-fast ml-1 text-[20px] text-purple-500"></i>
                 </label>
                 <label className="flex items-center">
                   <input
