@@ -422,6 +422,39 @@ const CheckoutMain = () => {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <h1 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">Checkout</h1>
 
+      {/* Important Delivery Notice */}
+      <div className="mb-8 p-6 bg-yellow-50 border-4 border-purple-400 rounded-lg shadow-md">
+        <div className="space-y-4">
+          <h3 className="text-xl font-bold text-red-600 flex items-center gap-2">
+            ⚠️ IMPORTANT DELIVERY INFORMATION
+          </h3>
+          
+          <div className="text-gray-800 space-y-3">
+            <p className="font-semibold text-red-600">
+              Please note the waybill fee on the website is the flatrate. If your item is bulky, you will be called to balance up.
+            </p>
+            
+            <div>
+              <p className="font-bold text-gray-900 mb-2">PLEASE TAKE NOTE OF OUR DELIVERY TIMES BELOW:</p>
+              <ul className="space-y-2 ml-4">
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600 font-bold">•</span>
+                  <span><strong>Delivery within Lagos:</strong> 24-48 hours</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600 font-bold">•</span>
+                  <span><strong>Delivery to South West & South East:</strong> 1-2 working days</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600 font-bold">•</span>
+                  <span><strong>Delivery to North & South South:</strong> 3-5 working days</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <form onSubmit={handleSubmitCheckout} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-white shadow-lg rounded-lg p-6 space-y-8">
 
