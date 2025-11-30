@@ -565,7 +565,7 @@ const CheckoutMain = () => {
                   />
                   Order Via WhatsApp <i className="fa-brands fa-square-whatsapp ml-1 text-green-700 text-[20px]"></i>
                 </label>
-                <label className="flex items-center">
+                {/* <label className="flex items-center">
                   <input
                     type="radio"
                     name="paymentMethod"
@@ -575,7 +575,7 @@ const CheckoutMain = () => {
                     className="mr-2"
                   />
                   Pick Up <i className="fa-solid fa-truck-fast ml-1 text-[20px] text-purple-500"></i>
-                </label>
+                </label> */}
                 <label className="flex items-center">
                   <input
                     type="radio"
