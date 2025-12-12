@@ -80,6 +80,8 @@ function App() {
                   <Route path="/app/productsbycategory/slug/:slug" element={<ProductsByCategory />} />
                   <Route path="/app/blogdetails/:id" element={<BlogDetails />} />
                   <Route path="/app/trackorder" element={<TrackOrder />} />
+                  <Route path="/app/checkout" element={<Checkout />} />
+                  <Route path="/app/ordersuccess" element={<OrderSuccess />} />
 
                   {/* Private/protected routes */}
                   <Route element={<PrivateRoutes />}>
@@ -99,9 +101,7 @@ function App() {
                     <Route path="/app/editproductcategories/:id" element={<EditProductCategories />} />
                     <Route path="/app/addproductcategory" element={<AddProductCategory />} />
                     <Route path="/app/editproduct/:id" element={<EditProduct />} />
-                    <Route path="/app/checkout" element={<Checkout />} />
                     <Route path="/app/wishlist" element={<Wishlist />} />
-                    <Route path="/app/ordersuccess" element={<OrderSuccess />} />
                     <Route path="/app/userorderdetails" element={<UserOrderDetails />} />
                     <Route path="/app/adminorderlist" element={<AdminOrderList />} />
                     <Route path="/app/vieworderdetails/:id" element={<ViewOrderDetails />} />

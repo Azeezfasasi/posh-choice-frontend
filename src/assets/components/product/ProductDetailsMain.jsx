@@ -143,10 +143,6 @@ const ProductDetailsMain = () => {
   };
 
   const handleAddToCart = async () => {
-    if (!user) {
-      setShowNotification(true);
-      return; // Stop if not logged in
-    }
     if (!product || product.stockQuantity === 0) {
       setShowNotification(true); // show product error
       return;
@@ -164,11 +160,6 @@ const ProductDetailsMain = () => {
 
 
   const handleToggleWishlist = async () => {
-    if (!user) {
-      // setError('Please log in to manage your wishlist.');
-      setShowNotification(true); // show product error
-      return;
-    }
     const isInWishlist = wishlist?.products?.some(item => item.productId === product._id);
     if (isInWishlist) {
       await removeFromWishlist(product._id);
@@ -246,11 +237,6 @@ const ProductDetailsMain = () => {
             role="alert">
             {cartSuccess || cartError}
           </div>
-        )}
-        {showNotification && !user && (
-           <div className="fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg text-white bg-red-500 transition-opacity duration-500" role="alert">
-              Please log in to perform this action.
-           </div>
         )}
 
         {/* Breadcrumbs */}

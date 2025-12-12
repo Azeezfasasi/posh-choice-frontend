@@ -168,16 +168,18 @@ const CheckoutMain = () => {
   const isProofReady = proofUrl && (proofUrl instanceof File || typeof proofUrl === 'string');
 
   const createOrderApi = async (orderData) => {
-    if (!token) {
-      throw new Error('Authentication token is missing.');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add authorization header only if user is logged in
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
     const response = await fetch(`${API_BASE_URL}/orders`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      headers,
       body: JSON.stringify(orderData),
     });
 
@@ -232,6 +234,11 @@ const CheckoutMain = () => {
   const validateForm = () => {
     const errors = {};
     if (!shippingAddress.fullName.trim()) errors.fullName = 'Full Name is required.';
+    if (!shippingAddress.email.trim()) errors.email = 'Email is required for order notifications.';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (shippingAddress.email && !emailRegex.test(shippingAddress.email)) {
+      errors.email = 'Please enter a valid email address.';
+    }
     if (!shippingAddress.address1.trim()) errors.address1 = 'Address Line 1 is required.';
     if (!shippingAddress.city.trim()) errors.city = 'City is required.';
     if (!shippingAddress.state.trim()) errors.state = 'State/Region is required.';
@@ -339,24 +346,6 @@ const CheckoutMain = () => {
       <div className="flex justify-center items-center min-h-[60vh] bg-gray-50 p-6 rounded-lg shadow-md">
         <FaSpinner className="animate-spin text-blue-500 text-4xl mr-3" />
         <p className="text-xl text-gray-700">Loading your cart for checkout...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-white p-8 rounded-lg shadow-xl text-gray-700">
-        <FaExclamationCircle className="text-red-500 text-6xl mb-6" />
-        <h2 className="text-3xl font-bold mb-3">Authentication Required</h2>
-        <p className="text-lg text-center mb-6">
-          Please log in to proceed with the checkout.
-        </p>
-        <Link
-          to="/app/login"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105"
-        >
-          Go to Login
-        </Link>
       </div>
     );
   }
@@ -469,6 +458,17 @@ const CheckoutMain = () => {
                   className={`w-full border ${validationErrors.fullName ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
                   required
                 />
+              </div>
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email*</label>
+                <input
+                  type="email" id="email" name="email"
+                  value={shippingAddress.email} onChange={handleShippingChange}
+                  className={`w-full border ${validationErrors.email ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500`}
+                  placeholder="your@email.com"
+                  required
+                />
+                {validationErrors.email && <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>}
               </div>
               <div className="md:col-span-2">
                 <label htmlFor="address1" className="block text-sm font-medium text-gray-700 mb-1">Address Line 1*</label>

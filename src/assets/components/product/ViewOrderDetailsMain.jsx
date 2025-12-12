@@ -76,7 +76,7 @@ export default function ViewOrderDetailsMain({ token: propToken }) {
         </div>
         <div className="mt-4 sm:mt-0">
           <p className="text-lg font-semibold">Customer:</p>
-          <p>{order.userId?.name} ({order.userId?.email})</p>
+          <p>{order.userId?.name || order.shippingAddress?.fullName} ({order.userId?.email || order.shippingAddress?.email})</p>
         </div>
       </div>
       <div className="mb-6">

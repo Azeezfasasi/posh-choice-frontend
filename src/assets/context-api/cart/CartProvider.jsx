@@ -4,7 +4,6 @@ import { useUser } from '../user-context/UseUser';
 import { API_BASE_URL } from '../../../config/api';
 
 export const CartProvider = ({ children }) => {
-//   const { token, isAuthenticated } = useAuth();
   const { user, token } = useUser();
   const [cart, setCart] = useState(null);
   const [wishlist, setWishlist] = useState(null);
@@ -12,6 +11,35 @@ export const CartProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const isAuthenticated = !!user && !!token;
+  
+  // Generate and store guest session ID for guest carts
+  const [guestSessionId] = useState(() => {
+    if (typeof window !== 'undefined') {
+      let id = localStorage.getItem('guestSessionId');
+      if (!id) {
+        id = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('guestSessionId', id);
+      }
+      return id;
+    }
+    return null;
+  });
+
+  // Helper function to get request headers
+  const getHeaders = (includeGuest = true) => {
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    } else if (includeGuest && guestSessionId) {
+      // For guest users, send guest session ID in header
+      headers['x-guest-session-id'] = guestSessionId;
+    }
+    
+    return headers;
+  };
 
   // Utility: Format price in NGN
   const formatPrice = useCallback((price) => {
@@ -44,17 +72,11 @@ export const CartProvider = ({ children }) => {
   // --- Cart Actions ---
 
   const fetchCart = useCallback(async () => {
-    if (!isAuthenticated || !token) {
-      setCart(null);
-      return;
-    }
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(`${API_BASE_URL}/cart`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getHeaders(),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to fetch cart');
@@ -66,24 +88,16 @@ export const CartProvider = ({ children }) => {
       setLoading(false);
       clearMessages();
     }
-  }, [isAuthenticated, token]);
+  }, [guestSessionId]);
 
   // Updated addToCart to accept and send slug, name, image, price
   const addToCart = useCallback(async (productId, quantity, slug, name, image, price) => {
-    if (!isAuthenticated || !token) {
-      setError('Please log in to add items to your cart.');
-      clearMessages();
-      return false;
-    }
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(`${API_BASE_URL}/cart`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getHeaders(),
         body: JSON.stringify({ productId, quantity, slug, name, image, price }),
       });
       const data = await response.json();
@@ -98,23 +112,15 @@ export const CartProvider = ({ children }) => {
       setLoading(false);
       clearMessages();
     }
-  }, [isAuthenticated, token]);
+  }, [guestSessionId]);
 
   const updateCartItemQuantity = useCallback(async (productId, quantity) => {
-    if (!isAuthenticated || !token) {
-      setError('Please log in to update cart items.');
-      clearMessages();
-      return false;
-    }
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(`${API_BASE_URL}/cart/${productId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getHeaders(),
         body: JSON.stringify({ quantity }),
       });
       const data = await response.json();
@@ -129,22 +135,15 @@ export const CartProvider = ({ children }) => {
       setLoading(false);
       clearMessages();
     }
-  }, [isAuthenticated, token]);
+  }, [guestSessionId]);
 
   const removeCartItem = useCallback(async (itemId) => {
-    if (!isAuthenticated || !token) {
-      setError('Please log in to remove items from your cart.');
-      clearMessages();
-      return false;
-    }
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(`${API_BASE_URL}/cart/item/${itemId}`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getHeaders(),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to remove item from cart');
@@ -159,22 +158,15 @@ export const CartProvider = ({ children }) => {
       setLoading(false);
       clearMessages();
     }
-  }, [isAuthenticated, token]);
+  }, [guestSessionId]);
 
   const clearCart = useCallback(async () => {
-    if (!isAuthenticated || !token) {
-      setError('Please log in to clear your cart.');
-      clearMessages();
-      return false;
-    }
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(`${API_BASE_URL}/cart`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getHeaders(),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to clear cart');
@@ -188,7 +180,7 @@ export const CartProvider = ({ children }) => {
       setLoading(false);
       clearMessages();
     }
-  }, [isAuthenticated, token]);
+  }, [guestSessionId]);
 
   // --- Wishlist Actions ---
 
@@ -218,20 +210,18 @@ export const CartProvider = ({ children }) => {
   }, [isAuthenticated, token]);
 
   const addToWishlist = useCallback(async (productId) => {
-    if (!isAuthenticated || !token) {
-      setError('Please log in to add items to your wishlist.');
-      clearMessages();
-      return false;
-    }
     setLoading(true);
     setError(null);
     try {
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       const response = await fetch(`${API_BASE_URL}/wishlist`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({ productId }),
       });
       const data = await response.json();
@@ -249,19 +239,16 @@ export const CartProvider = ({ children }) => {
   }, [isAuthenticated, token]);
 
   const removeFromWishlist = useCallback(async (productId) => {
-    if (!isAuthenticated || !token) {
-      setError('Please log in to remove items from your wishlist.');
-      clearMessages();
-      return false;
-    }
     setLoading(true);
     setError(null);
     try {
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       const response = await fetch(`${API_BASE_URL}/wishlist/${productId}`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to remove from wishlist');

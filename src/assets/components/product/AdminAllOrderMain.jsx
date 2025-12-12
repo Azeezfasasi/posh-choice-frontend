@@ -261,7 +261,7 @@ const AdminAllOrderMain = () => {
                 <tr key={order._id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.orderNumber || order._id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {order.userId?.name || 'N/A'} ({order.userId?.email || 'N/A'})
+                    {order.userId?.name || order.shippingAddress?.fullName || 'N/A'} ({order.userId?.email || order.shippingAddress?.email || 'N/A'})
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{formatPrice(order.totalPrice)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{new Date(order.createdAt).toLocaleDateString()}</td>
@@ -353,11 +353,11 @@ const AdminAllOrderMain = () => {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-gray-500 font-medium">Name</p>
-                    <p className="text-gray-900">{selectedOrderForDetail.userId?.name || 'N/A'}</p>
+                    <p className="text-gray-900">{selectedOrderForDetail.userId?.name || selectedOrderForDetail.shippingAddress?.fullName || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-gray-500 font-medium">Email</p>
-                    <p className="text-gray-900">{selectedOrderForDetail.userId?.email || 'N/A'}</p>
+                    <p className="text-gray-900">{selectedOrderForDetail.userId?.email || selectedOrderForDetail.shippingAddress?.email || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-gray-500 font-medium">Phone</p>

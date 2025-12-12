@@ -132,11 +132,16 @@ export const uploadPaymentProof = async (orderId, file, token) => {
     const formData = new FormData();
     formData.append('proof', file);
 
+    const headers = {};
+    
+    // Add authorization header only if token is provided
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_BASE_URL}/orders/${orderId}/upload-payment-proof`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+      headers,
       body: formData,
     });
     if (!response.ok) {
