@@ -474,7 +474,7 @@ const CheckoutMain = () => {
                 {validationErrors.email && <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>}
               </div>
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone*</label>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number*</label>
                 <input
                   type="tel" id="phone" name="phone"
                   value={shippingAddress.phone} onChange={handleShippingChange}

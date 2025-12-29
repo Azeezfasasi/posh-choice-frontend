@@ -360,6 +360,10 @@ const AdminAllOrderMain = () => {
                     <p className="text-gray-900">{selectedOrderForDetail.userId?.email || selectedOrderForDetail.shippingAddress?.email || 'N/A'}</p>
                   </div>
                   <div>
+                    <p className="text-gray-500 font-medium">Phone Number</p>
+                    <p className="text-gray-900">{selectedOrderForDetail.userId?.phone || selectedOrderForDetail.shippingAddress?.phone || 'N/A'}</p>
+                  </div>
+                  <div>
                     <p className="text-gray-500 font-medium">Phone</p>
                     <p className="text-gray-900">{selectedOrderForDetail.userId?.phone || 'N/A'}</p>
                   </div>
