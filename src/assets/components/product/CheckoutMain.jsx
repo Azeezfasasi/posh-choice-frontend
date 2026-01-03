@@ -597,7 +597,7 @@ const CheckoutMain = () => {
                     <div className="text-sm text-gray-700 space-y-1">
                       <p><b>Bank Name:</b> Monipoint</p>
                       <p><b>Account Number:</b> 6974818482</p>
-                      <p><b>Account Name:</b> Alimot Jimoh</p>
+                      <p><b>Account Name:</b> Posh Choice Store</p>
                       <p className="text-red-600 font-semibold mt-2">Total Amount to Transfer: ₦{totalAmount.toLocaleString()}</p>
                     </div>
                   </div>
