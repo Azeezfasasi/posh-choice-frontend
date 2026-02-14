@@ -254,10 +254,6 @@ const ProductForm = () => {
     }
   } catch (error) {
     console.error("Error submitting product form:", error);
-  } finally {
-    // If you have a local `isSubmitting` state, ensure it's reset here.
-    // setIsSubmitting(false);
-    loading(false);
   }
 };
 
