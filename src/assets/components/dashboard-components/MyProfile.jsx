@@ -1,395 +1,247 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { UserContext } from '../../context-api/user-context/UserContext';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  CalendarDays, Heart, KeyRound, Loader2, Mail, MapPin, MapPinned, Pencil, Phone, ShieldCheck, ShoppingBag, UserRound,
+} from 'lucide-react';
+import { useUser } from '../../context-api/user-context/UseUser';
+import { Toast } from './NewsletterUI';
+import { Avatar, Field, RoleBadge } from './UserAdminUI';
+import { errorMessage, inputClass } from './userAdmin';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const BIO_MAX = 300;
+const FIELDS = ['name', 'email', 'phone', 'address', 'city', 'state', 'zipCode', 'bio'];
+
+const toForm = (user) => Object.fromEntries(FIELDS.map(k => [k, user?.[k] || '']));
+const formatDate = (d) => (d ? new Date(d).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' }) : null);
+
+function Detail({ icon, label, value }) {
+  return (
+    <div className="flex items-start gap-3 py-3.5">
+      <span className="mt-0.5 inline-flex items-center justify-center w-8 h-8 shrink-0 rounded-full bg-cream text-ink-soft">
+        {React.createElement(icon, { className: 'w-4 h-4' })}
+      </span>
+      <div className="min-w-0">
+        <dt className="text-xs font-medium uppercase tracking-wider text-ink-soft">{label}</dt>
+        <dd className={`mt-0.5 text-sm break-words ${value ? 'text-ink' : 'text-ink-soft/70 italic'}`}>{value || 'Not added yet'}</dd>
+      </div>
+    </div>
+  );
+}
 
 function MyProfile() {
-  const { user, loading, error, success, updateProfile } = useContext(UserContext);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    bio: ''
-  });
-  const [isEditing, setIsEditing] = useState(false);
-  const [localSuccess, setLocalSuccess] = useState('');
-  const [localError, setLocalError] = useState('');
-  // const [passwordData, setPasswordData] = useState({
-  //   currentPassword: '',
-  //   newPassword: '',
-  //   confirmPassword: ''
-  // });
-  // const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const { user, isAdmin, updateProfile } = useUser();
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState(() => toForm(user));
+  const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState(null);
 
-  // Initialize form with user data when it loads
+  // Keep the form in step with the session until the user starts editing
+  useEffect(() => { if (!editing) setForm(toForm(user)); }, [user, editing]);
   useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        address: user.address || '',
-        city: user.city || '',
-        state: user.state || '',
-        zipCode: user.zipCode || '',
-        bio: user.bio || ''
-      });
-    }
-  }, [user]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  // const handlePasswordChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setPasswordData({ ...passwordData, [name]: value });
-  // };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLocalError('');
-    setLocalSuccess('');
-    
-    try {
-      await updateProfile(formData);
-      setIsEditing(false);
-      setLocalSuccess('Profile updated successfully!');
-    } catch (err) {
-      console.log(err);
-      setLocalError('Failed to update profile. Please try again.');
-    }
-  };
-
-  // const handlePasswordSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setLocalError('');
-  //   setLocalSuccess('');
-    
-  //   // Validate passwords match
-  //   if (passwordData.newPassword !== passwordData.confirmPassword) {
-  //     setLocalError('New passwords do not match');
-  //     return;
-  //   }
-    
-  //   try {
-  //     await updateProfile({ 
-  //       currentPassword: passwordData.currentPassword,
-  //       newPassword: passwordData.newPassword 
-  //     });
-  //     setShowPasswordForm(false);
-  //     setPasswordData({
-  //       currentPassword: '',
-  //       newPassword: '',
-  //       confirmPassword: ''
-  //     });
-  //     setLocalSuccess('Password updated successfully!');
-  //   } catch (err) {
-  //     console.log(err);
-  //     setLocalError('Failed to update password. Please check your current password.');
-  //   }
-  // };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-plum-600"></div>
-      </div>
-    );
-  }
+    if (!toast) return undefined;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   if (!user) {
-    return (
-      <div className="text-center p-8 bg-red-50 rounded-lg">
-        <p className="text-red-600">Please log in to view your profile.</p>
-      </div>
-    );
+    return <div className="max-w-5xl mx-auto h-64 rounded-2xl bg-white border border-line animate-pulse" aria-busy="true" />;
   }
 
+  const set = (key, value) => { setForm(f => ({ ...f, [key]: value })); setErrors(e => ({ ...e, [key]: '' })); };
+  const startEdit = () => { setForm(toForm(user)); setErrors({}); setServerError(''); setEditing(true); };
+  const cancel = () => { setEditing(false); setErrors({}); setServerError(''); };
+
+  const submit = async (ev) => {
+    ev.preventDefault();
+    const e = {};
+    if (!form.name.trim()) e.name = 'Enter your name.';
+    if (!EMAIL_RE.test(form.email.trim())) e.email = 'Enter a valid email address.';
+    if (form.bio.length > BIO_MAX) e.bio = `Keep it under ${BIO_MAX} characters.`;
+    setErrors(e);
+    if (Object.keys(e).length) return;
+
+    setSaving(true);
+    setServerError('');
+    try {
+      await updateProfile(Object.fromEntries(FIELDS.map(k => [k, form[k].trim()])));
+      setEditing(false);
+      setToast({ type: 'success', text: 'Your profile was updated.' });
+    } catch (err) {
+      setServerError(errorMessage(err, 'Could not update your profile. Please try again.'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const location = [user.address, user.city, user.state, user.zipCode].filter(Boolean).join(', ');
+  const filled = FIELDS.filter(k => user[k]).length;
+  const completion = Math.round((filled / FIELDS.length) * 100);
+  const missing = [!user.phone && 'phone number', !location && 'delivery address'].filter(Boolean);
+  const memberSince = formatDate(user.createdAt);
+
   return (
-    <div className="bg-white rounded-lg ring-1 ring-line p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-plum-700 border-b pb-2">My Profile</h2>
-      
-      {(error || localError) && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4">
-          {error || localError}
-        </div>
-      )}
-      
-      {(success || localSuccess) && (
-        <div className="bg-green-50 text-green-600 p-3 rounded-md mb-4">
-          {success || localSuccess}
-        </div>
-      )}
+    <div className="max-w-5xl mx-auto space-y-6">
+      <Toast toast={toast} />
 
-      {/* Profile Information */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-ink">Personal Information</h3>
-          <button
-            type="button"
-            onClick={() => setIsEditing(!isEditing)}
-            className={`px-4 py-2 rounded-md text-sm font-medium ${
-              isEditing 
-                ? 'bg-line text-ink hover:bg-plum-50' 
-                : 'bg-plum-600 text-white hover:bg-plum-700'
-            }`}
-          >
-            {isEditing ? 'Cancel' : 'Edit Profile'}
-          </button>
+      {/* Identity */}
+      <section className="relative overflow-hidden rounded-2xl border border-line bg-white">
+        <div className="h-24 bg-gradient-to-r from-plum-700 via-plum-600 to-plum-500" aria-hidden="true" />
+        <div className="px-5 md:px-6 pb-5 flex flex-col sm:flex-row sm:items-start gap-4">
+          <span className="-mt-10"><Avatar name={user.name} size="w-20 h-20 ring-4 ring-white" text="text-2xl" /></span>
+          <div className="min-w-0 flex-1 sm:pt-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-2xl text-ink truncate">{user.name}</h2>
+              <RoleBadge role={user.role} />
+            </div>
+            <p className="text-sm text-ink-soft truncate">{user.email}</p>
+            {memberSince && (
+              <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-ink-soft">
+                <CalendarDays className="w-3.5 h-3.5" /> Member since {memberSince}
+              </p>
+            )}
+          </div>
+          {!editing && (
+            <button type="button" onClick={startEdit}
+              className="self-start sm:mt-4 inline-flex items-center gap-2 rounded-full bg-plum-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-plum-700">
+              <Pencil className="w-4 h-4" /> Edit profile
+            </button>
+          )}
         </div>
+      </section>
 
-        {!isEditing ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_300px] gap-6 items-start">
+        {/* Details / edit form */}
+        <section className="min-w-0 rounded-2xl border border-line bg-white p-5 md:p-6">
+          <div className="flex items-center justify-between gap-3 mb-2">
             <div>
-              <p className="text-sm text-ink-soft mb-1">Name</p>
-              <p className="font-medium">{user.name || 'Not provided'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-ink-soft mb-1">Email</p>
-              <p className="font-medium">{user.email}</p>
-            </div>
-            <div>
-              <p className="text-sm text-ink-soft mb-1">Phone</p>
-              <p className="font-medium">{user.phone || 'Not provided'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-ink-soft mb-1">Address</p>
-              <p className="font-medium">{user.address || 'Not provided'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-ink-soft mb-1">City</p>
-              <p className="font-medium">{user.city || 'Not provided'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-ink-soft mb-1">State</p>
-              <p className="font-medium">{user.state || 'Not provided'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-ink-soft mb-1">Zip Code</p>
-              <p className="font-medium">{user.zipCode || 'Not provided'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-ink-soft mb-1">Role</p>
-              <p className="font-medium capitalize">{user.role || 'User'}</p>
-            </div>
-            <div className="md:col-span-2">
-              <p className="text-sm text-ink-soft mb-1">Bio</p>
-              <p>{user.bio || 'No bio provided.'}</p>
+              <h2 className="font-sans text-lg font-semibold text-ink">{editing ? 'Edit your details' : 'Personal information'}</h2>
+              <p className="text-sm text-ink-soft">
+                {editing ? 'Your delivery details are used to speed up checkout.' : 'How we contact you and where we deliver.'}
+              </p>
             </div>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-ink mb-1">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
-                />
+
+          {editing ? (
+            <form onSubmit={submit} noValidate className="mt-4 space-y-5">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Field label="Full name" htmlFor="pf-name" error={errors.name}>
+                  <input id="pf-name" value={form.name} onChange={e => set('name', e.target.value)} autoComplete="name" className={inputClass} />
+                </Field>
+                <Field label="Email" htmlFor="pf-email" error={errors.email}>
+                  <input id="pf-email" type="email" value={form.email} onChange={e => set('email', e.target.value)} autoComplete="email" className={inputClass} />
+                </Field>
+                <Field label="Phone" htmlFor="pf-phone" hint="Include your WhatsApp number if it's different.">
+                  <input id="pf-phone" type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} autoComplete="tel" placeholder="e.g. 0801 234 5678" className={inputClass} />
+                </Field>
               </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-ink mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
-                  disabled
-                />
-                <p className="text-xs text-ink-soft mt-1">Email cannot be changed</p>
+
+              <div className="border-t border-line pt-5">
+                <p className="text-sm font-semibold text-ink mb-3">Delivery address</p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2">
+                    <Field label="Street address" htmlFor="pf-address">
+                      <input id="pf-address" value={form.address} onChange={e => set('address', e.target.value)} autoComplete="street-address" className={inputClass} />
+                    </Field>
+                  </div>
+                  <Field label="City" htmlFor="pf-city">
+                    <input id="pf-city" value={form.city} onChange={e => set('city', e.target.value)} autoComplete="address-level2" className={inputClass} />
+                  </Field>
+                  <Field label="State" htmlFor="pf-state">
+                    <input id="pf-state" value={form.state} onChange={e => set('state', e.target.value)} autoComplete="address-level1" className={inputClass} />
+                  </Field>
+                  <Field label="Postal code" htmlFor="pf-zip">
+                    <input id="pf-zip" value={form.zipCode} onChange={e => set('zipCode', e.target.value)} autoComplete="postal-code" className={inputClass} />
+                  </Field>
+                </div>
               </div>
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-ink mb-1">
-                  Phone
-                </label>
-                <input
-                  type="text"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
-                />
+
+              <div className="border-t border-line pt-5">
+                <Field label="About you" htmlFor="pf-bio" error={errors.bio}>
+                  <textarea id="pf-bio" rows={4} value={form.bio} onChange={e => set('bio', e.target.value)} placeholder="A short note about yourself (optional)"
+                    className={`${inputClass} h-auto py-2.5 resize-y`} />
+                </Field>
+                <p className={`mt-1 text-right text-xs ${form.bio.length > BIO_MAX ? 'text-red-600' : 'text-ink-soft'}`}>{form.bio.length}/{BIO_MAX}</p>
               </div>
-              <div>
-                <label htmlFor="address" className="block text-sm font-medium text-ink mb-1">
-                  Address
-                </label>
-                <input
-                  type="text"
-                  id="address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
-                />
+
+              {serverError && <p role="alert" className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{serverError}</p>}
+
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                <button type="button" onClick={cancel} disabled={saving}
+                  className="rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-ink hover:bg-cream disabled:opacity-60">Cancel</button>
+                <button type="submit" disabled={saving}
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-plum-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-plum-700 disabled:opacity-60">
+                  {saving && <Loader2 className="w-4 h-4 animate-spin" />} Save changes
+                </button>
               </div>
-              <div>
-                <label htmlFor="city" className="block text-sm font-medium text-ink mb-1">
-                  City
-                </label>
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleInputChange}
-                  className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
-                />
+            </form>
+          ) : (
+            <>
+              <dl className="grid sm:grid-cols-2 sm:gap-x-6 divide-y divide-line sm:divide-y-0">
+                <Detail icon={UserRound} label="Full name" value={user.name} />
+                <Detail icon={Mail} label="Email" value={user.email} />
+                <Detail icon={Phone} label="Phone" value={user.phone} />
+                <Detail icon={MapPin} label="Delivery address" value={location} />
+              </dl>
+              <div className="mt-2 border-t border-line pt-4">
+                <p className="text-xs font-medium uppercase tracking-wider text-ink-soft">About you</p>
+                <p className={`mt-1 text-sm whitespace-pre-line ${user.bio ? 'text-ink' : 'text-ink-soft/70 italic'}`}>{user.bio || 'Nothing here yet.'}</p>
               </div>
-              <div>
-                <label htmlFor="state" className="block text-sm font-medium text-ink mb-1">
-                  State
-                </label>
-                <input
-                  type="text"
-                  id="state"
-                  name="state"
-                  value={formData.state}
-                  onChange={handleInputChange}
-                  className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
-                />
+            </>
+          )}
+        </section>
+
+        {/* Side cards */}
+        <aside className="space-y-6">
+          {completion < 100 && (
+            <section className="rounded-2xl border border-line bg-white p-5">
+              <div className="flex items-center justify-between text-sm">
+                <h2 className="font-sans font-semibold text-ink">Profile completeness</h2>
+                <span className="font-semibold text-plum-700">{completion}%</span>
               </div>
-              <div>
-                <label htmlFor="zipCode" className="block text-sm font-medium text-ink mb-1">
-                  Zip Code
-                </label>
-                <input
-                  type="text"
-                  id="zipCode"
-                  name="zipCode"
-                  value={formData.zipCode}
-                  onChange={handleInputChange}
-                  className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
-                />
+              <div className="mt-3 h-2 rounded-full bg-line overflow-hidden" role="progressbar" aria-valuenow={completion} aria-valuemin={0} aria-valuemax={100} aria-label="Profile completeness">
+                <div className="h-full rounded-full bg-plum-600" style={{ width: `${completion}%` }} />
+              </div>
+              <p className="mt-3 text-xs text-ink-soft">
+                {missing.length ? `Add your ${missing.join(' and ')} so we can reach you about your orders.` : 'A few optional details are still empty.'}
+              </p>
+              {!editing && <button type="button" onClick={startEdit} className="mt-3 text-sm font-semibold text-plum-700 hover:text-plum-800">Complete profile →</button>}
+            </section>
+          )}
+
+          <section className="rounded-2xl border border-line bg-white p-5">
+            <h2 className="flex items-center gap-2 font-sans text-sm font-semibold uppercase tracking-wider text-ink-soft">
+              <ShieldCheck className="w-4 h-4" /> Sign-in & security
+            </h2>
+            <div className="mt-4 flex items-start gap-3">
+              <span className="inline-flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-plum-50 text-plum-600"><KeyRound className="w-4 h-4" /></span>
+              <div className="text-sm">
+                <p className="font-semibold text-ink">Password</p>
+                <p className="text-ink-soft">We'll email you a secure link to set a new one.</p>
+                <Link to="/forgetpassword" className="mt-2 inline-block font-semibold text-plum-700 hover:text-plum-800">Change password →</Link>
               </div>
             </div>
-            <div>
-              <label htmlFor="bio" className="block text-sm font-medium text-ink mb-1">
-                Bio
-              </label>
-              <textarea
-                id="bio"
-                name="bio"
-                rows="4"
-                value={formData.bio}
-                onChange={handleInputChange}
-                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
-              ></textarea>
-            </div>
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="px-4 py-2 border border-line rounded-md text-sm font-medium text-ink hover:bg-cream"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-plum-600 rounded-md text-sm font-medium text-white hover:bg-plum-700"
-              >
-                Save Changes
-              </button>
-            </div>
-          </form>
-        )}
+          </section>
+
+          {!isAdmin && (
+            <section className="rounded-2xl border border-line bg-white p-2">
+              {[
+                { to: '/app/userorderdetails', label: 'My orders', icon: ShoppingBag },
+                { to: '/app/wishlist', label: 'Wishlist', icon: Heart },
+                { to: '/app/trackorder', label: 'Track an order', icon: MapPinned },
+              ].map(({ to, label, icon }) => (
+                <Link key={to} to={to} className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-ink hover:bg-cream">
+                  {React.createElement(icon, { className: 'w-4 h-4 text-plum-600' })} {label}
+                  <span className="ml-auto text-ink-soft" aria-hidden="true">→</span>
+                </Link>
+              ))}
+            </section>
+          )}
+        </aside>
       </div>
-
-      {/* Password Change Section */}
-      {/*<div className="border-t pt-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-ink">Security</h3>
-          <button
-            type="button"
-            onClick={() => setShowPasswordForm(!showPasswordForm)}
-            className={`px-4 py-2 rounded-md text-sm font-medium ${
-              showPasswordForm 
-                ? 'bg-line text-ink hover:bg-plum-50' 
-                : 'bg-plum-600 text-white hover:bg-plum-700'
-            }`}
-          >
-            {showPasswordForm ? 'Cancel' : 'Change Password'}
-          </button>
-        </div>
-
-         {showPasswordForm && (
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="currentPassword" className="block text-sm font-medium text-ink mb-1">
-                Current Password
-              </label>
-              <input
-                type="password"
-                id="currentPassword"
-                name="currentPassword"
-                value={passwordData.currentPassword}
-                onChange={handlePasswordChange}
-                required
-                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
-              />
-            </div>
-            <div>
-              <label htmlFor="newPassword" className="block text-sm font-medium text-ink mb-1">
-                New Password
-              </label>
-              <input
-                type="password"
-                id="newPassword"
-                name="newPassword"
-                value={passwordData.newPassword}
-                onChange={handlePasswordChange}
-                required
-                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
-              />
-            </div>
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-ink mb-1">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={passwordData.confirmPassword}
-                onChange={handlePasswordChange}
-                required
-                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
-              />
-            </div>
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => setShowPasswordForm(false)}
-                className="px-4 py-2 border border-line rounded-md text-sm font-medium text-ink hover:bg-cream"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-plum-600 rounded-md text-sm font-medium text-white hover:bg-plum-700"
-              >
-                Update Password
-              </button>
-            </div>
-          </form>
-        )} 
-      </div> */}
-    </div> 
+    </div>
   );
 }
 

@@ -1,538 +1,101 @@
-import { useState, useEffect, useContext } from 'react';
-import { UserContext } from '../../context-api/user-context/UserContext';
-import { FaLock, FaUnlock, FaEye, FaEyeSlash, FaCheck, FaTimes, FaInfoCircle, FaShieldAlt, FaUserCog, FaSearch } from 'react-icons/fa';
-import axios from 'axios';
-import { API_BASE_URL } from '../../../config/api';
+import React, { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { CheckCircle2, KeyRound, Lock, Search } from 'lucide-react';
+import { useUser } from '../../context-api/user-context/UseUser';
+import { Avatar, RoleBadge } from './UserAdminUI';
+import { ResetPasswordForm } from './UserForms';
+import { canManage, userId, usersApi } from './userAdmin';
 
 function ChangeUserPasswordMain() {
-  const { token, isAdmin, isSuperAdmin } = useContext(UserContext);
-  const [formData, setFormData] = useState({
-    currentPassword: '',  // Only used for current user
-    newPassword: '',
-    confirmPassword: ''
-  });
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
-  
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
-  const [validationErrors, setValidationErrors] = useState({});
-  const [passwordStrength, setPasswordStrength] = useState(0);
-  const [isAdminMode, setIsAdminMode] = useState(false);
+  const { user: me } = useUser();
+  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState(null);
+  const [done, setDone] = useState('');
 
-  // Password strength indicators
-  const strengthLabels = ['Weak', 'Fair', 'Good', 'Strong'];
-  const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500'];
+  const { data: users = [], isPending, isError, refetch } = useQuery({ queryKey: ['adminUsers'], queryFn: usersApi.list });
 
-  // Fetch users if admin
-  useEffect(() => {
-    if (isAdmin || isSuperAdmin) {
-      fetchUsers();
-    }
-  }, [isAdmin , isSuperAdmin]);
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return users
+      .filter(u => userId(u) !== userId(me)) // your own password is changed from your profile
+      .filter(u => !term || [u.name, u.email].some(v => v && v.toLowerCase().includes(term)))
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  }, [users, search, me]);
 
-  // Set admin mode based on user role
-  useEffect(() => {
-    setIsAdminMode(isAdmin || isSuperAdmin);
-  }, [isAdmin , isSuperAdmin]);
-  
-  // Filter users based on search term
-  useEffect(() => {
-    if (users.length > 0) {
-      const filtered = users.filter(user => 
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredUsers(filtered);
-    }
-  }, [searchTerm, users]);
-
-  const fetchUsers = async () => {
-    setIsLoadingUsers(true);
-    try {
-      const response = await axios.get(`${API_BASE_URL}/users`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setUsers(response.data);
-      setFilteredUsers(response.data);
-    } catch (err) {
-      console.error('Error fetching users:', err);
-      setError('Failed to load users. Please try again.');
-    } finally {
-      setIsLoadingUsers(false);
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-
-    // Clear field-specific validation error when user types
-    if (validationErrors[name]) {
-      setValidationErrors({
-        ...validationErrors,
-        [name]: ''
-      });
-    }
-
-    // Calculate password strength for new password
-    if (name === 'newPassword') {
-      calculatePasswordStrength(value);
-    }
-  };
-
-  const calculatePasswordStrength = (password) => {
-    let strength = 0;
-    
-    // Length check
-    if (password.length >= 8) strength += 1;
-    
-    // Complexity checks
-    if (/[A-Z]/.test(password)) strength += 1;
-    if (/[0-9]/.test(password)) strength += 1;
-    if (/[^A-Za-z0-9]/.test(password)) strength += 1;
-    
-    // Adjust final strength (0-3 scale)
-    setPasswordStrength(Math.min(3, strength));
-  };
-
-  const validateForm = () => {
-    const errors = {};
-    
-    // Current password only required when changing own password
-    if (!isAdminMode || (isAdminMode && !selectedUser)) {
-      if (!formData.currentPassword) {
-        errors.currentPassword = 'Current password is required';
-      }
-    }
-    
-    if (!formData.newPassword) {
-      errors.newPassword = 'New password is required';
-    } else if (formData.newPassword.length < 8) {
-      errors.newPassword = 'Password must be at least 8 characters';
-    }
-    
-    if (formData.newPassword !== formData.confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
-    }
-    
-    // Only check for same password when changing own password
-    if (!isAdminMode || (isAdminMode && !selectedUser)) {
-      if (formData.currentPassword === formData.newPassword) {
-        errors.newPassword = 'New password must be different from current password';
-      }
-    }
-    
-    // In admin mode, a user must be selected
-    if (isAdminMode && !selectedUser) {
-      errors.user = 'Please select a user';
-    }
-    
-    return errors;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    
-    // Validate form
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      return;
-    }
-    
-    setLoading(true);
-    
-    try {
-      if (isAdminMode && selectedUser) {
-        // Admin changing another user's password
-        await axios.put(
-          `${API_BASE_URL}/users/${selectedUser._id}/reset-password`, 
-          {
-            newPassword: formData.newPassword
-          },
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
-        
-        setSuccess(`Password for ${selectedUser.name} changed successfully!`);
-      } else {
-        // User changing own password
-        await axios.put(
-          `${API_BASE_URL}/users/change-password`, 
-          {
-            currentPassword: formData.currentPassword,
-            newPassword: formData.newPassword
-          },
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
-        
-        setSuccess('Your password changed successfully!');
-      }
-      
-      // Reset form
-      setFormData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
-      setPasswordStrength(0);
-      
-      // Clear selected user if in admin mode
-      if (isAdminMode) {
-        setSelectedUser(null);
-      }
-      
-    } catch (err) {
-      console.error('Error changing password:', err);
-      setError(err.response?.data?.error || 'Failed to change password. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUserSelect = (user) => {
-    setSelectedUser(user);
-    setSearchTerm('');
-  };
-
-  const toggleMode = () => {
-    setIsAdminMode(!isAdminMode);
-    setSelectedUser(null);
-    setFormData({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    });
-    setValidationErrors({});
-    setSuccess('');
-    setError('');
-  };
+  const choose = (u) => { setSelected(u); setDone(''); };
 
   return (
-    <div className="bg-white rounded-lg ring-1 ring-line p-6 max-w-xl mx-auto">
-      <div className="flex items-center mb-6">
-        <div className="p-3 rounded-full bg-plum-50 text-plum-700 mr-4">
-          <FaShieldAlt size={24} />
+    <div className="grid lg:grid-cols-[360px_minmax(0,1fr)] gap-6 items-start">
+      {/* User picker */}
+      <section className="min-w-0 rounded-2xl border border-line bg-white">
+        <div className="p-4 border-b border-line">
+          <h2 className="font-sans text-sm font-semibold uppercase tracking-wider text-ink-soft mb-3">1. Choose a user</h2>
+          <div className="relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-soft pointer-events-none" />
+            <input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name or email" aria-label="Search users"
+              className="w-full h-10 pl-10 pr-3 rounded-full border border-line bg-cream text-sm focus:bg-white" />
+          </div>
         </div>
-        <div>
-          <h2 className="text-2xl font-bold text-ink">
-            {isAdminMode && selectedUser 
-              ? `Change Password for ${selectedUser.name}` 
-              : "Change Password"}
-          </h2>
-          {isAdmin && (
-            <p className="text-sm text-ink-soft mt-1">
-              {isAdminMode 
-                ? "Admin mode: Change password for any user" 
-                : "Personal mode: Change your own password"}
-            </p>
+        <div className="max-h-[32rem] overflow-y-auto p-2">
+          {isPending ? (
+            <div className="space-y-2 p-2" aria-busy="true">{[0, 1, 2, 3].map(i => <div key={i} className="h-14 rounded-xl bg-cream animate-pulse" />)}</div>
+          ) : isError ? (
+            <p className="p-4 text-sm text-red-700">Couldn't load users. <button type="button" onClick={() => refetch()} className="font-semibold underline">Retry</button></p>
+          ) : filtered.length === 0 ? (
+            <p className="p-6 text-center text-sm text-ink-soft">No users found.</p>
+          ) : (
+            <ul className="space-y-1" role="listbox" aria-label="Users">
+              {filtered.map(u => {
+                const allowed = canManage(me, u);
+                const active = selected && userId(selected) === userId(u);
+                return (
+                  <li key={userId(u)}>
+                    <button type="button" role="option" aria-selected={active} disabled={!allowed} onClick={() => choose(u)}
+                      title={allowed ? undefined : 'Only a super admin can reset admin passwords'}
+                      className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition disabled:opacity-50 disabled:cursor-not-allowed ${active ? 'bg-plum-50 ring-1 ring-plum-200' : 'hover:bg-cream'}`}>
+                      <Avatar name={u.name} size="w-9 h-9" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-medium text-ink truncate">{u.name}</span>
+                        <span className="block text-xs text-ink-soft truncate">{u.email}</span>
+                      </span>
+                      {allowed ? <RoleBadge role={u.role} /> : <Lock className="w-4 h-4 text-ink-soft" />}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </div>
-      </div>
+      </section>
 
-      {/* Mode toggle for admins */}
-      {isAdmin && (
-        <div className="mb-6">
-          <button
-            type="button"
-            onClick={toggleMode}
-            className="inline-flex items-center px-4 py-2 border border-line rounded-md shadow-sm text-sm font-medium text-ink bg-white hover:bg-cream focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-plum-200"
-          >
-            <FaUserCog className="mr-2" />
-            {isAdminMode ? "Switch to Personal Mode" : "Switch to Admin Mode"}
-          </button>
-        </div>
-      )}
-
-      {error && (
-        <div className="bg-red-50 text-red-700 p-4 rounded-md mb-6 flex items-start">
-          <FaTimes className="mt-1 mr-2 flex-shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {success && (
-        <div className="bg-green-50 text-green-700 p-4 rounded-md mb-6 flex items-start">
-          <FaCheck className="mt-1 mr-2 flex-shrink-0" />
-          <span>{success}</span>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* User Selection (Admin Mode) */}
-        {isAdminMode && (
-          <div>
-            <label htmlFor="userSearch" className="block text-sm font-medium text-ink mb-1">
-              Select User
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaSearch className="text-ink-soft/70" />
-              </div>
-              <input
-                type="text"
-                id="userSearch"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search users by name or email"
-                className={`w-full pl-10 pr-3 py-2 border ${
-                  validationErrors.user ? 'border-red-500' : 'border-line'
-                } rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
-              />
-            </div>
-            
-            {validationErrors.user && (
-              <p className="mt-1 text-sm text-red-600 flex items-center">
-                <FaTimes className="mr-1" />
-                {validationErrors.user}
-              </p>
-            )}
-            
-            {searchTerm && filteredUsers.length > 0 && (
-              <div className="mt-2 max-h-60 overflow-y-auto border border-line rounded-md shadow-sm">
-                {filteredUsers.map(user => (
-                  <button
-                    key={user._id}
-                    type="button"
-                    onClick={() => handleUserSelect(user)}
-                    className="w-full text-left px-4 py-2 hover:bg-cream focus:outline-none focus:bg-cream"
-                  >
-                    <div className="font-medium">{user.name}</div>
-                    <div className="text-sm text-ink-soft">{user.email}</div>
-                  </button>
-                ))}
-              </div>
-            )}
-            
-            {selectedUser && (
-              <div className="mt-2 p-3 bg-plum-50 border border-plum-200 rounded-md">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium">{selectedUser.name}</p>
-                    <p className="text-sm text-ink-soft">{selectedUser.email}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedUser(null)}
-                    className="text-plum-700 hover:text-plum-800"
-                  >
-                    Change
-                  </button>
-                </div>
-              </div>
-            )}
+      {/* Form */}
+      <section className="min-w-0 rounded-2xl border border-line bg-white p-5 md:p-6">
+        <h2 className="font-sans text-sm font-semibold uppercase tracking-wider text-ink-soft mb-4">2. Set a new password</h2>
+        {done && (
+          <div role="status" className="mb-5 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" /> {done}
           </div>
         )}
-
-        {/* Current Password (only for own password change) */}
-        {(!isAdminMode || (isAdminMode && !selectedUser)) && (
-          <div>
-            <label htmlFor="currentPassword" className="block text-sm font-medium text-ink mb-1">
-              Current Password
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaLock className="text-ink-soft/70" />
+        {selected ? (
+          <>
+            <div className="mb-5 flex items-center gap-3 rounded-xl bg-cream px-4 py-3">
+              <Avatar name={selected.name} />
+              <div className="min-w-0">
+                <p className="font-semibold text-ink truncate">{selected.name}</p>
+                <p className="text-sm text-ink-soft truncate">{selected.email}</p>
               </div>
-              <input
-                type={showCurrentPassword ? "text" : "password"}
-                id="currentPassword"
-                name="currentPassword"
-                value={formData.currentPassword}
-                onChange={handleChange}
-                className={`w-full pl-10 pr-10 py-2 border ${
-                  validationErrors.currentPassword ? 'border-red-500' : 'border-line'
-                } rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
-                placeholder="Enter current password"
-              />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-ink-soft hover:text-ink"
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-              >
-                {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
+              <span className="ml-auto"><RoleBadge role={selected.role} /></span>
             </div>
-            {validationErrors.currentPassword && (
-              <p className="mt-1 text-sm text-red-600 flex items-center">
-                <FaTimes className="mr-1" />
-                {validationErrors.currentPassword}
-              </p>
-            )}
+            <ResetPasswordForm key={userId(selected)} user={selected} onDone={(message) => setDone(message)} />
+          </>
+        ) : (
+          <div className="py-12 text-center">
+            <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-plum-50 text-plum-600 mb-3"><KeyRound className="w-6 h-6" /></span>
+            <p className="font-semibold text-ink">Pick someone from the list</p>
+            <p className="mt-1 text-sm text-ink-soft max-w-sm mx-auto">Use this when a customer or team member can't get into their account and can't use "Forgot password".</p>
           </div>
         )}
-
-        {/* New Password */}
-        <div>
-          <label htmlFor="newPassword" className="block text-sm font-medium text-ink mb-1">
-            {isAdminMode && selectedUser ? `New Password for ${selectedUser.name}` : "New Password"}
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <FaUnlock className="text-ink-soft/70" />
-            </div>
-            <input
-              type={showNewPassword ? "text" : "password"}
-              id="newPassword"
-              name="newPassword"
-              value={formData.newPassword}
-              onChange={handleChange}
-              className={`w-full pl-10 pr-10 py-2 border ${
-                validationErrors.newPassword ? 'border-red-500' : 'border-line'
-              } rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
-              placeholder="Enter new password"
-            />
-            <button
-              type="button"
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-ink-soft hover:text-ink"
-              onClick={() => setShowNewPassword(!showNewPassword)}
-            >
-              {showNewPassword ? <FaEyeSlash /> : <FaEye />}
-            </button>
-          </div>
-          {validationErrors.newPassword && (
-            <p className="mt-1 text-sm text-red-600 flex items-center">
-              <FaTimes className="mr-1" />
-              {validationErrors.newPassword}
-            </p>
-          )}
-          
-          {/* Password strength meter */}
-          {formData.newPassword && (
-            <div className="mt-2">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-xs text-ink-soft">Password Strength:</span>
-                <span className={`text-xs font-medium ${
-                  passwordStrength === 0 ? 'text-red-500' :
-                  passwordStrength === 1 ? 'text-orange-500' :
-                  passwordStrength === 2 ? 'text-yellow-600' :
-                  'text-green-600'
-                }`}>{strengthLabels[passwordStrength]}</span>
-              </div>
-              <div className="w-full h-2 bg-line rounded-full overflow-hidden">
-                <div 
-                  className={`h-full ${strengthColors[passwordStrength]} transition-all duration-300`}
-                  style={{ width: `${(passwordStrength + 1) * 25}%` }}
-                ></div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Confirm Password */}
-        <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-ink mb-1">
-            Confirm New Password
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <FaUnlock className="text-ink-soft/70" />
-            </div>
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={`w-full pl-10 pr-10 py-2 border ${
-                validationErrors.confirmPassword ? 'border-red-500' : 'border-line'
-              } rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
-              placeholder="Confirm new password"
-            />
-            <button
-              type="button"
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-ink-soft hover:text-ink"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            >
-              {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-            </button>
-          </div>
-          {validationErrors.confirmPassword && (
-            <p className="mt-1 text-sm text-red-600 flex items-center">
-              <FaTimes className="mr-1" />
-              {validationErrors.confirmPassword}
-            </p>
-          )}
-        </div>
-
-        {/* Password requirements */}
-        <div className="bg-cream p-4 rounded-md border border-line">
-          <h3 className="text-sm font-medium text-ink mb-2 flex items-center">
-            <FaInfoCircle className="mr-1 text-plum-700" />
-            Password Requirements:
-          </h3>
-          <ul className="space-y-1 text-xs text-ink-soft">
-            <li className="flex items-start">
-              <span className={`mr-1 mt-0.5 ${formData.newPassword.length >= 8 ? 'text-green-500' : 'text-ink-soft/70'}`}>
-                {formData.newPassword.length >= 8 ? <FaCheck /> : '•'}
-              </span>
-              At least 8 characters
-            </li>
-            <li className="flex items-start">
-              <span className={`mr-1 mt-0.5 ${/[A-Z]/.test(formData.newPassword) ? 'text-green-500' : 'text-ink-soft/70'}`}>
-                {/[A-Z]/.test(formData.newPassword) ? <FaCheck /> : '•'}
-              </span>
-              At least one uppercase letter
-            </li>
-            <li className="flex items-start">
-              <span className={`mr-1 mt-0.5 ${/[0-9]/.test(formData.newPassword) ? 'text-green-500' : 'text-ink-soft/70'}`}>
-                {/[0-9]/.test(formData.newPassword) ? <FaCheck /> : '•'}
-              </span>
-              At least one number
-            </li>
-            <li className="flex items-start">
-              <span className={`mr-1 mt-0.5 ${/[^A-Za-z0-9]/.test(formData.newPassword) ? 'text-green-500' : 'text-ink-soft/70'}`}>
-                {/[^A-Za-z0-9]/.test(formData.newPassword) ? <FaCheck /> : '•'}
-              </span>
-              At least one special character
-            </li>
-          </ul>
-        </div>
-
-        {/* Submit Button */}
-        <div className="pt-2">
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-plum-600 hover:bg-plum-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-plum-200 cursor-pointer ${
-              loading ? 'opacity-70 cursor-not-allowed' : ''
-            }`}
-          >
-            {loading ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Updating Password...
-              </>
-            ) : (
-              isAdminMode && selectedUser ? `Set Password for ${selectedUser.name}` : 'Change Password'
-            )}
-          </button>
-        </div>
-      </form>
-
-      <div className="mt-6 text-center">
-        <p className="text-xs text-ink-soft">
-          {isAdminMode 
-            ? "As an administrator, you can reset passwords for any user in the system." 
-            : "Your password is securely stored and never shared with third parties."}
-        </p>
-      </div>
+      </section>
     </div>
   );
 }

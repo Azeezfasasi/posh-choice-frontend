@@ -1,552 +1,297 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { UserContext } from '../../context-api/user-context/UserContext';
-import { FaEdit, FaTrash, FaBan, FaCheck, FaUserAlt } from 'react-icons/fa';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ChevronLeft, ChevronRight, KeyRound, MoreHorizontal, Pencil, Search, ShieldCheck, Trash2, UserCheck, UserPlus, UserX, Users } from 'lucide-react';
+import { useUser } from '../../context-api/user-context/UseUser';
+import { Avatar, RoleBadge } from './UserAdminUI';
+import { ResetPasswordForm, UserForm } from './UserForms';
+import { ConfirmDialog, Drawer, Toast } from './NewsletterUI';
+import { ADMIN_ROLES, canManage, errorMessage, userId, usersApi } from './userAdmin';
 
-function AllUserMain() {
-  const { 
-    getAllUsers, 
-    editUser, 
-    deleteUser, 
-    disableUser, 
-    userListLoading, 
-    error, 
-    success,
-    isSuperAdmin 
-  } = useContext(UserContext);
-  
-  const [users, setUsers] = useState([]);
-  const [totalUsers, setTotalUsers] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [usersPerPage] = useState(10);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [localSuccess, setLocalSuccess] = useState('');
-  const [localError, setLocalError] = useState('');
-  const [filterRole, setFilterRole] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortField, setSortField] = useState('name');
-  const [sortDirection, setSortDirection] = useState('asc');
-  const [editFormData, setEditFormData] = useState({
-    name: '',
-    email: '',
-    role: '',
-    isActive: true
-  });
+const PAGE_SIZE = 15;
+const shortDate = (d) => (d ? new Date(d).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' }) : '—');
+const isActive = (u) => u.isActive !== false;
 
-  // Fetch users when component mounts
+const TABS = [
+  { value: 'all', label: 'All', test: () => true },
+  { value: 'customers', label: 'Customers', test: (u) => !ADMIN_ROLES.includes(u.role) },
+  { value: 'admins', label: 'Admins', test: (u) => ADMIN_ROLES.includes(u.role) },
+  { value: 'disabled', label: 'Disabled', test: (u) => !isActive(u) },
+];
+
+const SORTS = {
+  newest: (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+  oldest: (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0),
+  name: (a, b) => (a.name || '').localeCompare(b.name || ''),
+};
+
+function RowMenu({ user, me, onEdit, onReset, onToggle, onDelete }) {
+  const [pos, setPos] = useState(null); // fixed position of the open menu
+  const ref = useRef(null);
+  const buttonRef = useRef(null);
+  const open = Boolean(pos);
+
+  // The menu is positioned against the viewport so the table's scroll area can't clip it
+  const place = () => {
+    const r = buttonRef.current?.getBoundingClientRect();
+    if (!r) return;
+    const menuHeight = 250;
+    const top = r.bottom + menuHeight + 8 > window.innerHeight ? Math.max(8, r.top - menuHeight - 4) : r.bottom + 4;
+    setPos({ top, right: window.innerWidth - r.right });
+  };
+  const toggle = () => (open ? setPos(null) : place());
+  const setOpen = (value) => { if (!value) setPos(null); };
+
   useEffect(() => {
-    fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (!open) return undefined;
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setPos(null); };
+    const onKey = (e) => { if (e.key === 'Escape') setPos(null); };
+    const onScroll = () => place(); // keep the menu attached to its button
+    document.addEventListener('mousedown', close);
+    document.addEventListener('keydown', onKey);
+    window.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', onScroll);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('keydown', onKey);
+      window.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [open]);
 
-  const fetchUsers = async () => {
-    try {
-      const data = await getAllUsers();
-      setUsers(data);
-      setTotalUsers(data.length);
-    } catch (err) {
-      console.error("Error fetching users:", err);
-    }
-  };
-
-  // Filter and sort users
-  const filteredUsers = users.filter(user => {
-    const roleFilter = filterRole === 'all' || user.role === filterRole;
-    const searchFilter = 
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    return roleFilter && searchFilter;
-  });
-
-  const sortedUsers = [...filteredUsers].sort((a, b) => {
-    let comparison = 0;
-    if (sortField === 'name') {
-      comparison = a.name.localeCompare(b.name);
-    } else if (sortField === 'email') {
-      comparison = a.email.localeCompare(b.email);
-    } else if (sortField === 'role') {
-      comparison = a.role.localeCompare(b.role);
-    } else if (sortField === 'createdAt') {
-      comparison = new Date(a.createdAt) - new Date(b.createdAt);
-    }
-    return sortDirection === 'asc' ? comparison : -comparison;
-  });
-
-  // Get current users for pagination
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = sortedUsers.slice(indexOfFirstUser, indexOfLastUser);
-  const totalPages = Math.ceil(sortedUsers.length / usersPerPage);
-
-  // Change page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  // Handle sort change
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
-
-  // Edit user functions
-  const handleEditClick = (user) => {
-    setSelectedUser(user);
-    setEditFormData({
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      isActive: user.isActive
-    });
-    setIsEditModalOpen(true);
-  };
-
-  const handleEditFormChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setEditFormData({
-      ...editFormData,
-      [name]: type === 'checkbox' ? checked : value
-    });
-  };
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    setLocalError('');
-    setLocalSuccess('');
-    
-    try {
-      await editUser(selectedUser._id, editFormData);
-      await fetchUsers();
-      setIsEditModalOpen(false);
-      setLocalSuccess(`User ${editFormData.name} updated successfully!`);
-    } catch (err) {
-      console.log(err);
-      setLocalError('Failed to update user. Please try again.');
-    }
-  };
-
-  // Delete user functions
-  const handleDeleteClick = (user) => {
-    setSelectedUser(user);
-    setIsDeleteModalOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    setLocalError('');
-    setLocalSuccess('');
-    
-    try {
-      await deleteUser(selectedUser._id);
-      await fetchUsers();
-      setIsDeleteModalOpen(false);
-      setLocalSuccess(`User ${selectedUser.name} deleted successfully!`);
-    } catch (err) {
-      console.log(err);
-      setLocalError('Failed to delete user. Please try again.');
-    }
-  };
-
-  // Toggle user active status
-  const toggleUserStatus = async (user) => {
-    setLocalError('');
-    setLocalSuccess('');
-    
-    try {
-      await disableUser(user._id);
-      await fetchUsers();
-      setLocalSuccess(`User ${user.name} ${user.isActive ? 'disabled' : 'enabled'} successfully!`);
-    } catch (err) {
-      console.log(err);
-      setLocalError(`Failed to ${user.isActive ? 'disable' : 'enable'} user. Please try again.`);
-    }
-  };
-
-  // Role badge color mapping
-  const getRoleBadgeColor = (role) => {
-    switch (role) {
-      case 'super admin': return 'bg-red-100 text-red-800';
-      case 'admin': return 'bg-plum-50 text-plum-800';
-      case 'user': return 'bg-plum-50 text-plum-800';
-      case 'customer': return 'bg-green-100 text-green-800';
-      default: return 'bg-cream text-ink';
-    }
-  };
+  const self = userId(user) === userId(me);
+  const allowed = canManage(me, user);
+  const item = 'w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left rounded-lg disabled:opacity-40 disabled:cursor-not-allowed';
+  const run = (fn) => () => { setOpen(false); fn(user); };
 
   return (
-    <div className="bg-white rounded-lg ring-1 ring-line p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-ink">User Management</h2>
-        <div className="text-sm bg-plum-50 text-plum-700 px-3 py-1 rounded-full font-medium">
-          Total Users: {totalUsers}
+    <div className="relative" ref={ref}>
+      <button ref={buttonRef} type="button" onClick={toggle} aria-haspopup="menu" aria-expanded={open} aria-label={`Actions for ${user.name}`}
+        className="inline-flex items-center justify-center w-9 h-9 rounded-full text-ink hover:bg-plum-50 hover:text-plum-700">
+        <MoreHorizontal className="w-5 h-5" />
+      </button>
+      {open && (
+        <div role="menu" style={{ top: pos.top, right: pos.right }} className="fixed z-40 w-52 rounded-xl border border-line bg-white p-1.5 shadow-[0_16px_40px_-12px_rgba(15,27,61,0.25)]">
+          <button role="menuitem" type="button" disabled={!allowed} onClick={run(onEdit)} className={`${item} text-ink hover:bg-cream`}><Pencil className="w-4 h-4" /> Edit details</button>
+          <button role="menuitem" type="button" disabled={!allowed} onClick={run(onReset)} className={`${item} text-ink hover:bg-cream`}><KeyRound className="w-4 h-4" /> Reset password</button>
+          <button role="menuitem" type="button" disabled={!allowed || self} onClick={run(onToggle)} className={`${item} text-ink hover:bg-cream`}>
+            {isActive(user) ? <><UserX className="w-4 h-4" /> Disable account</> : <><UserCheck className="w-4 h-4" /> Enable account</>}
+          </button>
+          <div className="my-1 border-t border-line" />
+          <button role="menuitem" type="button" disabled={!allowed || self} onClick={run(onDelete)} className={`${item} text-red-600 hover:bg-red-50`}><Trash2 className="w-4 h-4" /> Delete user</button>
+          {!allowed && <p className="px-3 pt-1.5 pb-1 text-[11px] text-ink-soft">Only a super admin can manage admin accounts.</p>}
+          {allowed && self && <p className="px-3 pt-1.5 pb-1 text-[11px] text-ink-soft">You can't disable or delete your own account.</p>}
         </div>
+      )}
+    </div>
+  );
+}
+
+function AllUserMain() {
+  const { user: me } = useUser();
+  const queryClient = useQueryClient();
+  const [tab, setTab] = useState('all');
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState('newest');
+  const [page, setPage] = useState(1);
+  const [panel, setPanel] = useState(null); // { type: 'create' | 'edit' | 'reset', user? }
+  const [confirm, setConfirm] = useState(null); // { type: 'delete' | 'disable', user }
+  const [toast, setToast] = useState(null);
+
+  const showToast = (type, text) => {
+    setToast({ type, text });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  const { data: users = [], isPending, isError, refetch } = useQuery({ queryKey: ['adminUsers'], queryFn: usersApi.list });
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+
+  const statusMutation = useMutation({
+    mutationFn: (u) => (isActive(u) ? usersApi.disable(userId(u)) : usersApi.enable(userId(u))),
+    onSuccess: (_, u) => { refresh(); setConfirm(null); showToast('success', isActive(u) ? `${u.name} can no longer sign in.` : `${u.name} can sign in again.`); },
+    onError: (err) => { setConfirm(null); showToast('error', errorMessage(err, 'Could not change account status.')); },
+  });
+  const deleteMutation = useMutation({
+    mutationFn: (u) => usersApi.remove(userId(u)),
+    onSuccess: (_, u) => { refresh(); setConfirm(null); showToast('success', `${u.name} was deleted.`); },
+    onError: (err) => { setConfirm(null); showToast('error', errorMessage(err, 'Could not delete this user.')); },
+  });
+
+  const counts = useMemo(() => Object.fromEntries(TABS.map(t => [t.value, users.filter(t.test).length])), [users]);
+  const newThisMonth = users.filter(u => {
+    const d = new Date(u.createdAt); const n = new Date();
+    return d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear();
+  }).length;
+
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    const test = TABS.find(t => t.value === tab).test;
+    return users
+      .filter(test)
+      .filter(u => !term || [u.name, u.email, u.phone].some(v => v && v.toLowerCase().includes(term)))
+      .sort(SORTS[sort]);
+  }, [users, tab, search, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const current = Math.min(page, totalPages);
+  const rows = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+
+  const panelDone = (message) => { refresh(); setPanel(null); showToast('success', message); };
+
+  return (
+    <div className="space-y-5">
+      <Toast toast={toast} />
+
+      {/* Summary */}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
+        {[
+          ['Customers', counts.customers, Users],
+          ['New this month', newThisMonth, UserPlus],
+          ['Admins', counts.admins, ShieldCheck],
+          ['Disabled', counts.disabled, UserX],
+        ].map(([label, value, icon]) => (
+          <div key={label} className="rounded-2xl border border-line bg-white p-4 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs md:text-sm text-ink-soft">{label}</p>
+              <p className="mt-1 text-xl md:text-2xl font-bold text-ink tabular-nums">{isPending ? '…' : value}</p>
+            </div>
+            <span className="hidden sm:inline-flex items-center justify-center w-10 h-10 rounded-xl bg-plum-50 text-plum-600">
+              {React.createElement(icon, { className: 'w-5 h-5' })}
+            </span>
+          </div>
+        ))}
       </div>
 
-      {(error || localError) && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4">
-          {error || localError}
+      {/* Toolbar */}
+      <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar" role="tablist" aria-label="Filter users">
+          {TABS.map(t => (
+            <button key={t.value} type="button" role="tab" aria-selected={tab === t.value} onClick={() => { setTab(t.value); setPage(1); }}
+              className={`shrink-0 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${tab === t.value ? 'border-plum-600 bg-plum-600 text-white' : 'border-line bg-white text-ink hover:border-plum-300'}`}>
+              {t.label}
+              <span className={`rounded-full px-1.5 text-xs font-semibold ${tab === t.value ? 'bg-white/20' : 'bg-cream text-ink-soft'}`}>{counts[t.value] ?? 0}</span>
+            </button>
+          ))}
         </div>
-      )}
-      
-      {(success || localSuccess) && (
-        <div className="bg-green-50 text-green-600 p-3 rounded-md mb-4">
-          {success || localSuccess}
-        </div>
-      )}
-
-      {/* Filters and Search */}
-      <div className="flex flex-col md:flex-row justify-between mb-6 space-y-3 md:space-y-0">
-        <div className="flex space-x-2">
-          <select
-            value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
-            className="border border-line rounded-md px-3 py-1 text-sm"
-          >
-            <option value="all">All Roles</option>
-            <option value="super admin">Super Admin</option>
-            <option value="admin">Admin</option>
-            <option value="user">User</option>
-            <option value="customer">Customer</option>
+        <div className="flex flex-wrap sm:flex-nowrap gap-3 lg:ml-auto">
+          <div className="relative flex-1 min-w-[12rem] lg:w-64">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-soft pointer-events-none" />
+            <input type="search" value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} placeholder="Search name, email or phone"
+              aria-label="Search users" className="w-full h-10 pl-10 pr-3 rounded-full border border-line bg-white text-sm" />
+          </div>
+          <select value={sort} onChange={e => setSort(e.target.value)} aria-label="Sort users" className="h-10 rounded-full border border-line bg-white px-4 text-sm">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="name">Name A–Z</option>
           </select>
-          
-          <button
-            onClick={fetchUsers}
-            className="bg-plum-600 text-white px-3 py-1 rounded-md text-sm hover:bg-plum-700 cursor-pointer"
-          >
-            Refresh
+          <button type="button" onClick={() => setPanel({ type: 'create' })}
+            className="shrink-0 inline-flex items-center gap-2 h-10 rounded-full bg-plum-600 px-5 text-sm font-semibold text-white hover:bg-plum-700">
+            <UserPlus className="w-4 h-4" /> Add user
           </button>
         </div>
-        
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="border border-line rounded-md pl-8 pr-3 py-1 w-full md:w-64 text-sm"
-          />
-          <svg 
-            className="w-4 h-4 absolute left-2.5 top-2 text-ink-soft/70" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24" 
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </div>
       </div>
 
-      {/* Users Table */}
-      {userListLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-plum-600"></div>
-        </div>
-      ) : (
-        <>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-line">
-              <thead className="bg-cream">
-                <tr>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('name')}
-                  >
-                    <div className="flex items-center">
-                      Name
-                      {sortField === 'name' && (
-                        <span className="ml-1">
-                          {sortDirection === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('email')}
-                  >
-                    <div className="flex items-center">
-                      Email
-                      {sortField === 'email' && (
-                        <span className="ml-1">
-                          {sortDirection === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('role')}
-                  >
-                    <div className="flex items-center">
-                      Role
-                      {sortField === 'role' && (
-                        <span className="ml-1">
-                          {sortDirection === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('createdAt')}
-                  >
-                    <div className="flex items-center">
-                      Joined
-                      {sortField === 'createdAt' && (
-                        <span className="ml-1">
-                          {sortDirection === 'asc' ? '↑' : '↓'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-ink-soft uppercase tracking-wider">
-                    Actions
-                  </th>
+      {/* Table */}
+      <div className="rounded-2xl border border-line bg-white">
+        {isPending ? (
+          <div className="p-4 space-y-2" aria-busy="true">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-14 rounded-xl bg-cream animate-pulse" />)}</div>
+        ) : isError ? (
+          <p role="alert" className="p-6 text-center text-sm text-red-700">We couldn't load users. <button type="button" onClick={() => refetch()} className="font-semibold underline">Try again</button></p>
+        ) : rows.length === 0 ? (
+          <p className="py-14 text-center text-ink-soft">{search ? 'No users match your search.' : 'No users here yet.'}</p>
+        ) : (
+          <div className="relative overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wider border-b border-line">
+                  <th className="px-4 py-3 font-semibold">User</th>
+                  <th className="px-4 py-3 font-semibold">Role</th>
+                  <th className="px-4 py-3 font-semibold">Phone</th>
+                  <th className="px-4 py-3 font-semibold">Joined</th>
+                  <th className="px-4 py-3 font-semibold">Status</th>
+                  <th className="px-4 py-3"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-line">
-                {currentUsers.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" className="px-6 py-4 text-center text-sm text-ink-soft">
-                      No users found
+              <tbody className="divide-y divide-line">
+                {rows.map(u => (
+                  <tr key={userId(u)} className="hover:bg-cream/50">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar name={u.name} />
+                        <div className="min-w-0">
+                          <p className="font-medium text-ink truncate max-w-[14rem]">
+                            {u.name}{userId(u) === userId(me) && <span className="ml-1.5 text-xs font-normal text-ink-soft">(you)</span>}
+                          </p>
+                          <p className="text-xs text-ink-soft truncate max-w-[16rem]">{u.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3"><RoleBadge role={u.role} /></td>
+                    <td className="px-4 py-3 text-ink-soft whitespace-nowrap">{u.phone || '—'}</td>
+                    <td className="px-4 py-3 text-ink-soft whitespace-nowrap">{shortDate(u.createdAt)}</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${isActive(u) ? 'bg-emerald-50 text-emerald-800 ring-emerald-200' : 'bg-red-50 text-red-700 ring-red-200'}`}>
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70" aria-hidden="true" />
+                        {isActive(u) ? 'Active' : 'Disabled'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <RowMenu user={u} me={me}
+                        onEdit={(x) => setPanel({ type: 'edit', user: x })}
+                        onReset={(x) => setPanel({ type: 'reset', user: x })}
+                        onToggle={(x) => (isActive(x) ? setConfirm({ type: 'disable', user: x }) : statusMutation.mutate(x))}
+                        onDelete={(x) => setConfirm({ type: 'delete', user: x })} />
                     </td>
                   </tr>
-                ) : (
-                  currentUsers.map((user) => (
-                    <tr key={user._id} className="hover:bg-cream">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 bg-line rounded-full flex items-center justify-center">
-                            <FaUserAlt className="text-ink-soft" />
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-ink">{user.name}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-ink">{user.email}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleBadgeColor(user.role)}`}>
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-ink-soft">
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {user.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end space-x-2">
-                          <button
-                            onClick={() => handleEditClick(user)}
-                            className="text-plum-700 hover:text-plum-900 cursor-pointer"
-                            title="Edit User"
-                          >
-                            <FaEdit size={18} />
-                          </button>
-                          {/* Don't allow deleting super admins unless you are a super admin */}
-                          {(isSuperAdmin || user.role !== 'super admin') && (
-                            <button
-                              onClick={() => handleDeleteClick(user)}
-                              className="text-red-600 hover:text-red-900 cursor-pointer"
-                              title="Delete User"
-                            >
-                              <FaTrash size={18} />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => toggleUserStatus(user)}
-                            className={user.isActive ? "text-plum-700 hover:text-plum-900 cursor-pointer" : "text-green-600 hover:text-green-900 cursor-pointer"}
-                            title={user.isActive ? "Disable User" : "Enable User"}
-                          >
-                            {user.isActive ? <FaBan size={18} /> : <FaCheck size={18} />}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
           </div>
+        )}
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex justify-between items-center mt-6">
-              <div className="text-sm text-ink">
-                Showing <span className="font-medium">{indexOfFirstUser + 1}</span> to{' '}
-                <span className="font-medium">
-                  {Math.min(indexOfLastUser, sortedUsers.length)}
-                </span>{' '}
-                of <span className="font-medium">{sortedUsers.length}</span> users
-              </div>
-              <nav className="flex space-x-1">
-                <button
-                  onClick={() => paginate(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${
-                    currentPage === 1
-                      ? 'bg-cream text-ink-soft/70 cursor-not-allowed'
-                      : 'bg-white text-ink hover:bg-cream'
-                  }`}
-                >
-                  Previous
-                </button>
-                {[...Array(totalPages)].map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => paginate(i + 1)}
-                    className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${
-                      currentPage === i + 1
-                        ? 'bg-plum-600 text-white'
-                        : 'bg-white text-ink hover:bg-cream'
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                <button
-                  onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${
-                    currentPage === totalPages
-                      ? 'bg-cream text-ink-soft/70 cursor-not-allowed'
-                      : 'bg-white text-ink hover:bg-cream'
-                  }`}
-                >
-                  Next
-                </button>
-              </nav>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Edit User Modal */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-10 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-auto">
-            <h3 className="text-lg font-medium text-ink mb-4">Edit User</h3>
-            <form onSubmit={handleEditSubmit}>
-              <div className="mb-4">
-                <label htmlFor="name" className="block text-sm font-medium text-ink mb-1">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={editFormData.name}
-                  onChange={handleEditFormChange}
-                  className="w-full border border-line rounded-md px-3 py-2"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="email" className="block text-sm font-medium text-ink mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={editFormData.email}
-                  onChange={handleEditFormChange}
-                  className="w-full border border-line rounded-md px-3 py-2"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="role" className="block text-sm font-medium text-ink mb-1">
-                  Role
-                </label>
-                <select
-                  id="role"
-                  name="role"
-                  value={editFormData.role}
-                  onChange={handleEditFormChange}
-                  className="w-full border border-line rounded-md px-3 py-2"
-                  required
-                >
-                  <option value="user">User</option>
-                  <option value="customer">Customer</option>
-                  <option value="admin">Admin</option>
-                  {isSuperAdmin && <option value="super admin">Super Admin</option>}
-                </select>
-              </div>
-              <div className="mb-4 flex items-center">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  name="isActive"
-                  checked={editFormData.isActive}
-                  onChange={handleEditFormChange}
-                  className="h-4 w-4 text-plum-700 border-line rounded"
-                />
-                <label htmlFor="isActive" className="ml-2 block text-sm text-ink">
-                  Active Account
-                </label>
-              </div>
-              <div className="flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="bg-line text-ink px-4 py-2 rounded-md text-sm font-medium hover:bg-plum-50 cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-plum-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-plum-700 cursor-pointer"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Delete User Modal */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-10 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-auto">
-            <h3 className="text-lg font-medium text-ink mb-4">Confirm Delete</h3>
-            <p className="text-sm text-ink-soft mb-4">
-              Are you sure you want to delete the user <span className="font-medium">{selectedUser?.name}</span>? This action cannot be undone.
+        {!isPending && filtered.length > 0 && (
+          <div className="flex items-center justify-between gap-3 px-4 py-3 border-t border-line">
+            <p className="text-sm text-ink-soft">
+              Showing <span className="font-semibold text-ink">{(current - 1) * PAGE_SIZE + 1}–{Math.min(current * PAGE_SIZE, filtered.length)}</span> of <span className="font-semibold text-ink">{filtered.length}</span>
             </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => setIsDeleteModalOpen(false)}
-                className="bg-line text-ink px-4 py-2 rounded-md text-sm font-medium hover:bg-plum-50 cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 cursor-pointer"
-              >
-                Delete User
-              </button>
-            </div>
+            {totalPages > 1 && (
+              <div className="flex gap-1">
+                <button type="button" onClick={() => setPage(current - 1)} disabled={current === 1} aria-label="Previous page"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-line hover:bg-cream disabled:opacity-40"><ChevronLeft className="w-4 h-4" /></button>
+                <button type="button" onClick={() => setPage(current + 1)} disabled={current === totalPages} aria-label="Next page"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-full border border-line hover:bg-cream disabled:opacity-40"><ChevronRight className="w-4 h-4" /></button>
+              </div>
+            )}
           </div>
-        </div>
+        )}
+      </div>
+
+      {panel?.type === 'create' && (
+        <Drawer title="Add a user" subtitle="They can sign in with this email and password." onClose={() => setPanel(null)}>
+          <UserForm onDone={panelDone} onCancel={() => setPanel(null)} />
+        </Drawer>
+      )}
+      {panel?.type === 'edit' && (
+        <Drawer title={panel.user.name} subtitle={panel.user.email} onClose={() => setPanel(null)}>
+          <UserForm user={panel.user} onDone={panelDone} onCancel={() => setPanel(null)} />
+        </Drawer>
+      )}
+      {panel?.type === 'reset' && (
+        <Drawer title="Reset password" subtitle={`${panel.user.name} · ${panel.user.email}`} onClose={() => setPanel(null)}>
+          <ResetPasswordForm user={panel.user} onDone={panelDone} onCancel={() => setPanel(null)} />
+        </Drawer>
+      )}
+
+      {confirm?.type === 'disable' && (
+        <ConfirmDialog title={`Disable ${confirm.user.name}?`} tone="red"
+          body="They'll be signed out and won't be able to sign in until you enable the account again. Their orders are kept."
+          confirmLabel="Disable account" busy={statusMutation.isPending}
+          onCancel={() => setConfirm(null)} onConfirm={() => statusMutation.mutate(confirm.user)} />
+      )}
+      {confirm?.type === 'delete' && (
+        <ConfirmDialog title={`Delete ${confirm.user.name}?`} tone="red"
+          body="This permanently removes the account. Their past orders stay in your order history. If you may need the account again, disable it instead."
+          confirmLabel="Delete user" busy={deleteMutation.isPending}
+          onCancel={() => setConfirm(null)} onConfirm={() => deleteMutation.mutate(confirm.user)} />
       )}
     </div>
   );

@@ -87,16 +87,14 @@ export const UserProvider = ({ children }) => {
     } finally { setLoading(false); }
   };
 
+  // Throws on failure so the caller can show the server's message.
+  // Leaves the global `loading` flag alone so route guards don't flash a spinner.
   const updateProfile = async (updates) => {
-    setLoading(true); setError(''); setSuccess('');
-    try {
-      const res = await axios.put(`${API_BASE_URL}/users/me`, updates);
-      setUser(res.data);
-      setSuccess('Profile updated!');
-    } catch (err) {
-        console.log(err);
-      setError('Failed to update profile.');
-    } finally { setLoading(false); }
+    setError(''); setSuccess('');
+    const res = await axios.put(`${API_BASE_URL}/users/me`, updates);
+    setUser(res.data);
+    setSuccess('Profile updated!');
+    return res.data;
   };
 
   // Admin actions
