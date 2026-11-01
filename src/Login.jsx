@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import TopHeader from './assets/components/TopHeader';
-import MainHeader from './assets/components/MainHeader';
 import { useUser } from './assets/context-api/user-context/UseUser';
 import { Helmet } from 'react-helmet';
-import Footer from './assets/components/Footer';
+import AuthLayout, { AuthField, PasswordField, authButtonClass } from './assets/components/AuthLayout';
 
 function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
-  const { login, loading, error, success, user } = useUser();
+  const [submitted, setSubmitted] = useState(false);
+  const { login, loading, error, user } = useUser();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -17,6 +16,7 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitted(true);
     await login(form);
   };
 
@@ -29,61 +29,47 @@ function Login() {
   return (
     <>
     <Helmet>
-      <title>Login - Posh Choice Store</title>
+      <title>Sign in - Posh Choice Store</title>
     </Helmet>
-      <TopHeader />
-      <MainHeader />
-      <div className="flex justify-center items-center min-h-[60vh] bg-gray-100 py-8">
-        <form
-          className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md"
-          onSubmit={handleSubmit}
-        >
-          <h2 className="text-2xl font-bold mb-6 text-center text-[#0A1F44]">Sign In to Your Account</h2>
-          {error && <div className="text-red-600 text-center mb-4">{error}</div>}
-          {success && <div className="text-green-600 text-center mb-4">{success}</div>}
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="Enter your email"
-              required
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block text-gray-700 mb-2">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="Enter your password"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-6 rounded-full transition text-lg"
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-          <div className="mt-4 text-center">
-            <Link to="/forgetpassword" className="text-blue-500 hover:underline text-sm">Forgot password?</Link>
-          </div>
-          <div className="flex flex-row justify-center items-center gap-1 mt-4 text-center text-black font-semibold">
-            <span>Don't have an account?</span>
-            <Link to="/register" className='text-purple-500  hover:underline text-sm'>
-                Register
-            </Link>
-          </div>
-        </form>
-      </div>
-      <Footer />
+    <AuthLayout title="Welcome back" subtitle="Sign in to track orders, manage your wishlist and check out faster.">
+      <form className="space-y-5" onSubmit={handleSubmit} noValidate={false}>
+        {submitted && error && (
+          <p role="alert" className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{error}</p>
+        )}
+        <AuthField
+          label="Email address"
+          id="login-email"
+          type="email"
+          name="email"
+          value={form.email}
+          onChange={handleChange}
+          placeholder="you@example.com"
+          autoComplete="email"
+          required
+        />
+        <PasswordField
+          label="Password"
+          id="login-password"
+          name="password"
+          value={form.password}
+          onChange={handleChange}
+          placeholder="Your password"
+          autoComplete="current-password"
+          required
+          labelAction={<Link to="/forgetpassword" className="text-sm font-medium text-plum-700 hover:text-plum-800">Forgot password?</Link>}
+        />
+        <button type="submit" disabled={loading} className={authButtonClass}>
+          {loading ? 'Signing in…' : 'Sign in'}
+        </button>
+      </form>
+      <p className="mt-8 text-center text-sm text-ink-soft">
+        New to Posh Choice?{' '}
+        <Link to="/register" className="font-semibold text-plum-700 hover:text-plum-800">Create an account</Link>
+      </p>
+      <p className="mt-3 text-center text-xs text-ink-soft">
+        You can also <Link to="/app/shop" className="underline underline-offset-2 hover:text-ink">shop</Link> and check out as a guest.
+      </p>
+    </AuthLayout>
     </>
   );
 }

@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { Editor } from '@tinymce/tinymce-react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useProduct } from '../../context-api/product-context/UseProduct'
 import { FaSave, FaArrowLeft, FaTrash } from 'react-icons/fa'; 
-import { RICHT_TEXT_API } from '../../../config/richText';
+import RichTextEditor from '../RichTextEditor';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { API_BASE_URL, API_ORIGIN } from '../../../config/api';
@@ -242,19 +241,19 @@ const EditProduct = () => {
   // Base URL for Cloudinary images (assuming your backend serves them directly or via a proxy)
   const API_URL_BASE = API_ORIGIN;
 
-  const editorRef = useRef(null);
+  // Functional update so other fields edited meanwhile are never overwritten
   const handleEditorChange = (content) => {
-    setFormData({ ...formData, description: content });
+    setFormData(prev => ({ ...prev, description: content }));
   };
 
   return (
-    <div className='max-w-4xl mx-auto p-4 bg-white rounded-md shadow-md'>
+    <div className='max-w-4xl mx-auto p-4 bg-white rounded-md ring-1 ring-line'>
       <Link to="/app/products" className='flex flex-row justify-start mb-6'>
           <img src={back} alt="Back" className='w-7 h-7 mr-2' /><p className='font-semibold'>Back to Products</p>
       </Link>
-      <h2 className='text-2xl font-bold mb-4'>Edit Product: <span className='text-purple-500'>{product?.name || 'Loading...'}</span></h2>
+      <h2 className='text-2xl font-bold mb-4'>Edit Product: <span className='text-plum-700'>{product?.name || 'Loading...'}</span></h2>
 
-      {loading && <p className="text-purple-500 mb-4">Loading product data...</p>}
+      {loading && <p className="text-plum-700 mb-4">Loading product data...</p>}
       {error && <p className="text-red-600 mb-4">{error}</p>}
       {success && <p className="text-green-600 mb-4">{success}</p>}
       {updateProductMutation.isError && (
@@ -263,10 +262,10 @@ const EditProduct = () => {
 
       {(!product && !loading) ? (
         <div className="text-center py-8">
-          <p className="text-gray-600">Product not found or an error occurred.</p>
+          <p className="text-ink-soft">Product not found or an error occurred.</p>
           <button
             onClick={() => navigate('/app/products')}
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-plum-200"
           >
             Go Back to Products
           </button>
@@ -275,32 +274,25 @@ const EditProduct = () => {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 mb-15 lg:6">
           {/* Name and Description */}
           <div>
-            <label htmlFor="name" className='block text-sm font-medium text-gray-700 mb-1'>Product Name<span className='text-red-700'>*</span></label>
+            <label htmlFor="name" className='block text-sm font-medium text-ink mb-1'>Product Name<span className='text-red-700'>*</span></label>
             <input
               type="text"
               id="name"
               value={formData.name}
               onChange={handleChange}
               name="name"
-              className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+              className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
             />
             {validationErrors.name && <p className="text-red-500 text-sm mt-1">{validationErrors.name}</p>}
           </div>
           <div>
-            <label htmlFor="description" className='block text-sm font-medium text-gray-700 mb-1'>Description<span className='text-red-700'>*</span></label>
-            <Editor
-              apiKey={RICHT_TEXT_API}
-              onInit={(evt, editor) => (editorRef.current = editor)}
-              value={formData.richDescription || formData.description}
-              init={{
-                height: 300,
-                menubar: false,
-                plugins: [
-                  'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview', 'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen', 'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
-                ],
-                toolbar: 'undo redo | blocks |' + 'bold italic forecolor | alignleft aligncenter alignright alignjustify |' + '| bullist numlist outdent indent | ' + 'removeformat | help',
-              }}
-              onEditorChange={handleEditorChange}
+            <label htmlFor="description" className='block text-sm font-medium text-ink mb-1'>Description<span className='text-red-700'>*</span></label>
+            <RichTextEditor
+              id="description"
+              value={formData.description || formData.richDescription || ''}
+              onChange={handleEditorChange}
+              placeholder="Describe the product: materials, size, what's in the box, care instructions…"
+              invalid={Boolean(validationErrors.description)}
             />
             {validationErrors.description && (
               <p className="text-red-500 text-xs mt-1">{validationErrors.description}</p>
@@ -310,8 +302,8 @@ const EditProduct = () => {
           {/* Brand, Price, Discounted Price */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">
-                Brand <span className='text-purple-500'>(Optional)</span>
+              <label htmlFor="brand" className="block text-sm font-medium text-ink mb-1">
+                Brand <span className='text-plum-700'>(Optional)</span>
               </label>
               <input
                 type="text"
@@ -319,11 +311,11 @@ const EditProduct = () => {
                 value={formData.brand}
                 onChange={handleChange}
                 name="brand"
-                className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+                className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
               />
             </div>
             <div>
-              <label htmlFor="price" className='block text-sm font-medium text-gray-700 mb-1'>Price<span className='text-red-700'>*</span></label>
+              <label htmlFor="price" className='block text-sm font-medium text-ink mb-1'>Price<span className='text-red-700'>*</span></label>
               <input
                 type="number" 
                 id="price"
@@ -332,12 +324,12 @@ const EditProduct = () => {
                 name="price"
                 step="0.01"
                 min="0"
-                className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+                className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
               />
               {validationErrors.price && <p className="text-red-500 text-sm mt-1">{validationErrors.price}</p>}
             </div>
             {/* <div>
-              <label htmlFor="originalPrice" className='block text-sm font-medium text-gray-700 mb-1'>Disconted Price <span className='text-[12px] text-purple-600 font-semibold'>(Optional - Must be less than original price)</span></label>
+              <label htmlFor="originalPrice" className='block text-sm font-medium text-ink mb-1'>Disconted Price <span className='text-[12px] text-plum-700 font-semibold'>(Optional - Must be less than original price)</span></label>
               <input
                 type="number" // Changed to number type
                 id="originalPrice"
@@ -346,11 +338,11 @@ const EditProduct = () => {
                 name="originalPrice"
                 step="0.01"
                 min="0"
-                className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+                className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
               />
             </div> */}
             <div>
-              <label htmlFor="discountPercentage" className='block text-sm font-medium text-gray-700 mb-1'>Discount Percentage (%) <span className='text-purple-500'>(Optional)</span></label>
+              <label htmlFor="discountPercentage" className='block text-sm font-medium text-ink mb-1'>Discount Percentage (%) <span className='text-plum-700'>(Optional)</span></label>
               <input
                 type="number"
                 id="discountPercentage"
@@ -359,7 +351,7 @@ const EditProduct = () => {
                 name="discountPercentage"
                 min="0"
                 max="100"
-                className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+                className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
               />
             </div>
           </div>
@@ -367,13 +359,13 @@ const EditProduct = () => {
           {/* Category, Stock, SKU */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label htmlFor="category" className='block text-sm font-medium text-gray-700 mb-1'>Category<span className='text-red-700'>*</span></label>
+              <label htmlFor="category" className='block text-sm font-medium text-ink mb-1'>Category<span className='text-red-700'>*</span></label>
               <select
                 name="category"
                 id="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+                className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
               >
                 <option value="">Choose Category</option>
                 {categories.map(cat => (
@@ -385,7 +377,7 @@ const EditProduct = () => {
               {validationErrors.category && <p className="text-red-500 text-sm mt-1">{validationErrors.category}</p>}
             </div>
             <div>
-              <label htmlFor="stockQuantity" className='block text-sm font-medium text-gray-700 mb-1'>Stock Quantity<span className='text-red-700'>*</span></label>
+              <label htmlFor="stockQuantity" className='block text-sm font-medium text-ink mb-1'>Stock Quantity<span className='text-red-700'>*</span></label>
               <input
                 type="number" // Changed to number type
                 id="stockQuantity"
@@ -393,12 +385,12 @@ const EditProduct = () => {
                 onChange={handleChange}
                 name="stockQuantity"
                 min="0"
-                className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+                className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
               />
               {validationErrors.stockQuantity && <p className="text-red-500 text-sm mt-1">{validationErrors.stockQuantity}</p>}
             </div>
             <div>
-              <label htmlFor="sku" className='block text-sm font-medium text-gray-700 mb-1'>SKU<span className='text-red-700'>* <span className='text-purple-500'>(This will be generated automatically)</span></span></label>
+              <label htmlFor="sku" className='block text-sm font-medium text-ink mb-1'>SKU<span className='text-red-700'>* <span className='text-plum-700'>(This will be generated automatically)</span></span></label>
               <input
                 type="text"
                 id="sku"
@@ -406,7 +398,7 @@ const EditProduct = () => {
                 onChange={handleChange}
                 name="sku"
                 readOnly
-                className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+                className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
               />
             </div>
           </div>
@@ -414,38 +406,38 @@ const EditProduct = () => {
           {/* Colors, Sizes, Tags */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label htmlFor="colors" className='block text-sm font-medium text-gray-700 mb-1'>Colors <span className='text-purple-500'>(Optional - Separate each with a comma)</span></label>
+              <label htmlFor="colors" className='block text-sm font-medium text-ink mb-1'>Colors <span className='text-plum-700'>(Optional - Separate each with a comma)</span></label>
               <input
                 type="text"
                 id="colors"
                 value={Array.isArray(formData.colors) ? formData.colors.join(', ') : formData.colors || ''} // Ensure it handles string or array initially
                 onChange={handleChange}
                 name="colors"
-                className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+                className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
                 placeholder="e.g., Red, Blue, Black"
               />
             </div>
             <div>
-                <label htmlFor="colors" className='block text-sm font-medium text-gray-700 mb-1'>Sizes <span className='text-purple-500'>(Optional - Separate each with a comma)</span></label>
+                <label htmlFor="colors" className='block text-sm font-medium text-ink mb-1'>Sizes <span className='text-plum-700'>(Optional - Separate each with a comma)</span></label>
               <input
                 type="text"
                 id="sizes"
                 value={Array.isArray(formData.sizes) ? formData.sizes.join(', ') : formData.sizes || ''} // Ensure it handles string or array initially
                 onChange={handleChange}
                 name="sizes"
-                className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+                className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
                 placeholder="e.g., S, M, L, XL"
               />
             </div>
             <div>
-              <label htmlFor="tags" className='block text-sm font-medium text-gray-700 mb-1'>Tags <span className='text-purple-500'>(Optional - Separate each with a comma)</span></label>
+              <label htmlFor="tags" className='block text-sm font-medium text-ink mb-1'>Tags <span className='text-plum-700'>(Optional - Separate each with a comma)</span></label>
               <input
                 type="text"
                 id="tags"
                 value={Array.isArray(formData.tags) ? formData.tags.join(', ') : formData.tags || ''} // Ensure it handles string or array initially
                 onChange={handleChange}
                 name="tags"
-                className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+                className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
                 placeholder="e.g., electronics, new, durable"
               />
             </div>
@@ -456,7 +448,7 @@ const EditProduct = () => {
             <h3 className="text-xl font-semibold mb-3">Physical Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label htmlFor="weight" className='block text-sm font-medium text-gray-700 mb-1'>Weight (kg) <span className='text-purple-500'>(Optional)</span></label>
+                <label htmlFor="weight" className='block text-sm font-medium text-ink mb-1'>Weight (kg) <span className='text-plum-700'>(Optional)</span></label>
                 <input
                   type="number"
                   id="weight"
@@ -465,11 +457,11 @@ const EditProduct = () => {
                   name="weight"
                   step="0.01"
                   min="0"
-                  className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+                  className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
                 />
               </div>
               <div>
-                <label htmlFor="dimensions.length" className='block text-sm font-medium text-gray-700 mb-1'>Length (cm) <span className='text-purple-500'>(Optional)</span></label>
+                <label htmlFor="dimensions.length" className='block text-sm font-medium text-ink mb-1'>Length (cm) <span className='text-plum-700'>(Optional)</span></label>
                 <input
                   type="number"
                   id="dimensions.length"
@@ -478,11 +470,11 @@ const EditProduct = () => {
                   name="dimensions.length"
                   step="0.01"
                   min="0"
-                  className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+                  className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
                 />
               </div>
               <div>
-                <label htmlFor="dimensions.width" className='block text-sm font-medium text-gray-700 mb-1'>Width (cm) <span className='text-purple-500'>(Optional)</span></label>
+                <label htmlFor="dimensions.width" className='block text-sm font-medium text-ink mb-1'>Width (cm) <span className='text-plum-700'>(Optional)</span></label>
                 <input
                   type="number"
                   id="dimensions.width"
@@ -491,11 +483,11 @@ const EditProduct = () => {
                   name="dimensions.width"
                   step="0.01"
                   min="0"
-                  className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+                  className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
                 />
               </div>
               <div>
-                <label htmlFor="dimensions.height" className='block text-sm font-medium text-gray-700 mb-1'>Height (cm) <span className='text-purple-500'>(Optional)</span></label>
+                <label htmlFor="dimensions.height" className='block text-sm font-medium text-ink mb-1'>Height (cm) <span className='text-plum-700'>(Optional)</span></label>
                 <input
                   type="number"
                   id="dimensions.height"
@@ -504,7 +496,7 @@ const EditProduct = () => {
                   name="dimensions.height"
                   step="0.01"
                   min="0"
-                  className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+                  className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
                 />
               </div>
             </div>
@@ -512,25 +504,25 @@ const EditProduct = () => {
 
           {/* Image Management */}
           <div>
-            <label htmlFor="images" className='block text-lg font-medium mb-2'>Product Images: <br /><span className='text-purple-500 text-[13px]'>You can add up to 10 new images or remove existing ones.</span></label>
+            <label htmlFor="images" className='block text-lg font-medium mb-2'>Product Images: <br /><span className='text-plum-700 text-[13px]'>You can add up to 10 new images or remove existing ones.</span></label>
             <input
               type="file"
               id="images"
               name="images"
               multiple
               onChange={handleImageChange}
-              className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
+              className="block w-full text-sm text-ink border border-line rounded-lg cursor-pointer bg-cream focus:outline-none"
               accept="image/*"
             />
-            <p className="mt-1 text-sm text-gray-500">Upload new images (max 10MB each).</p>
+            <p className="mt-1 text-sm text-ink-soft">Upload new images (max 10MB each).</p>
 
             {/* Display newly selected images (before upload) */}
             {imageFiles.length > 0 && (
               <div className="mt-3">
-                <p className="text-md font-medium text-gray-700">New images to upload:</p>
+                <p className="text-md font-medium text-ink">New images to upload:</p>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {imageFiles.map((file, index) => (
-                    <div key={index} className="relative w-24 h-24 rounded-md overflow-hidden border border-gray-200">
+                    <div key={index} className="relative w-24 h-24 rounded-md overflow-hidden border border-line">
                       <img src={URL.createObjectURL(file)} alt={`New Image ${index}`} className="w-full h-full object-cover" />
                       {/* No delete here, as these are not yet uploaded */}
                     </div>
@@ -542,10 +534,10 @@ const EditProduct = () => {
             {/* Display existing product images */}
             {currentImages.length > 0 && (
               <div className="mt-4">
-                <p className="text-md font-medium text-purple-500">Current product images:</p>
+                <p className="text-md font-medium text-plum-700">Current product images:</p>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {currentImages.map((image, index) => (
-                    <div key={image.url} className="relative w-24 h-24 rounded-md overflow-hidden border border-gray-200">
+                    <div key={image.url} className="relative w-24 h-24 rounded-md overflow-hidden border border-line">
                       <img src={image.url} alt={`Existing Image ${index}`} className="w-full h-full object-cover" />
                       <button
                         type="button"
@@ -561,7 +553,7 @@ const EditProduct = () => {
               </div>
             )}
             {(currentImages.length === 0 && product?.images?.length > 0) && (
-              <p className="text-purple-500 text-sm mt-2">All original images have been marked for removal. Add new ones or they will be deleted upon save.</p>
+              <p className="text-plum-700 text-sm mt-2">All original images have been marked for removal. Add new ones or they will be deleted upon save.</p>
             )}
           </div>
 
@@ -574,7 +566,7 @@ const EditProduct = () => {
                 id="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="block w-full p-4 text-lg border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-500"
+                className="block w-full p-4 text-lg border border-line rounded-md focus:outline-none focus:ring focus:ring-plum-200"
               >
                 <option value="draft">Draft</option>
                 <option value="active">Active</option>
@@ -589,9 +581,9 @@ const EditProduct = () => {
                         name="isFeatured"
                         checked={formData.isFeatured}
                         onChange={handleChange}
-                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        className="h-4 w-4 text-plum-700 border-line rounded focus:ring-plum-200"
                     />
-                    <label htmlFor="isFeatured" className="ml-2 block text-sm text-gray-900">Is Featured?</label>
+                    <label htmlFor="isFeatured" className="ml-2 block text-sm text-ink">Is Featured?</label>
                 </div>
                 <div className="flex items-center">
                     <input
@@ -600,9 +592,9 @@ const EditProduct = () => {
                         name="onSale"
                         checked={formData.onSale}
                         onChange={handleChange}
-                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        className="h-4 w-4 text-plum-700 border-line rounded focus:ring-plum-200"
                     />
-                    <label htmlFor="onSale" className="ml-2 block text-sm text-gray-900">Is On Sale?</label>
+                    <label htmlFor="onSale" className="ml-2 block text-sm text-ink">Is On Sale?</label>
                 </div>
             </div>
           </div>
@@ -612,7 +604,7 @@ const EditProduct = () => {
           <div className='flex flex-row justify-start items-center gap-5 mt-6'>
             <button
               type="submit"
-              className="flex justify-center items-center gap-3 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring focus:ring-purple-500 w-[200px] cursor-pointer"
+              className="flex justify-center items-center gap-3 bg-plum-600 hover:bg-plum-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring focus:ring-plum-200 w-[200px] cursor-pointer"
               disabled={loading}
             >
               {loading ? 'Saving...' : <><FaSave /> Save Changes</>}
@@ -620,7 +612,7 @@ const EditProduct = () => {
             <button
               type="button"
               onClick={() => navigate('/app/products')}
-              className="flex justify-center items-center gap-3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md focus:outline-none focus:ring focus:ring-gray-500 w-[200px] cursor-pointer"
+              className="flex justify-center items-center gap-3 bg-line hover:bg-plum-100 text-ink font-bold py-2 px-4 rounded-md focus:outline-none focus:ring focus:ring-plum-200 w-[200px] cursor-pointer"
             >
               <FaArrowLeft /> Cancel
             </button>

@@ -96,7 +96,7 @@ function MyProfile() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-plum-600"></div>
       </div>
     );
   }
@@ -110,8 +110,8 @@ function MyProfile() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-purple-500 border-b pb-2">My Profile</h2>
+    <div className="bg-white rounded-lg ring-1 ring-line p-6 max-w-4xl mx-auto">
+      <h2 className="text-2xl font-bold mb-6 text-plum-700 border-b pb-2">My Profile</h2>
       
       {(error || localError) && (
         <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4">
@@ -128,14 +128,14 @@ function MyProfile() {
       {/* Profile Information */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-700">Personal Information</h3>
+          <h3 className="text-xl font-semibold text-ink">Personal Information</h3>
           <button
             type="button"
             onClick={() => setIsEditing(!isEditing)}
             className={`px-4 py-2 rounded-md text-sm font-medium ${
               isEditing 
-                ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' 
-                : 'bg-purple-500 text-white hover:bg-purple-600'
+                ? 'bg-line text-ink hover:bg-plum-50' 
+                : 'bg-plum-600 text-white hover:bg-plum-700'
             }`}
           >
             {isEditing ? 'Cancel' : 'Edit Profile'}
@@ -145,39 +145,39 @@ function MyProfile() {
         {!isEditing ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Name</p>
+              <p className="text-sm text-ink-soft mb-1">Name</p>
               <p className="font-medium">{user.name || 'Not provided'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">Email</p>
+              <p className="text-sm text-ink-soft mb-1">Email</p>
               <p className="font-medium">{user.email}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">Phone</p>
+              <p className="text-sm text-ink-soft mb-1">Phone</p>
               <p className="font-medium">{user.phone || 'Not provided'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">Address</p>
+              <p className="text-sm text-ink-soft mb-1">Address</p>
               <p className="font-medium">{user.address || 'Not provided'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">City</p>
+              <p className="text-sm text-ink-soft mb-1">City</p>
               <p className="font-medium">{user.city || 'Not provided'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">State</p>
+              <p className="text-sm text-ink-soft mb-1">State</p>
               <p className="font-medium">{user.state || 'Not provided'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">Zip Code</p>
+              <p className="text-sm text-ink-soft mb-1">Zip Code</p>
               <p className="font-medium">{user.zipCode || 'Not provided'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">Role</p>
+              <p className="text-sm text-ink-soft mb-1">Role</p>
               <p className="font-medium capitalize">{user.role || 'User'}</p>
             </div>
             <div className="md:col-span-2">
-              <p className="text-sm text-gray-500 mb-1">Bio</p>
+              <p className="text-sm text-ink-soft mb-1">Bio</p>
               <p>{user.bio || 'No bio provided.'}</p>
             </div>
           </div>
@@ -185,7 +185,7 @@ function MyProfile() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="name" className="block text-sm font-medium text-ink mb-1">
                   Name
                 </label>
                 <input
@@ -194,11 +194,11 @@ function MyProfile() {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
                 />
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-ink mb-1">
                   Email
                 </label>
                 <input
@@ -207,13 +207,13 @@ function MyProfile() {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
                   disabled
                 />
-                <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                <p className="text-xs text-ink-soft mt-1">Email cannot be changed</p>
               </div>
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="phone" className="block text-sm font-medium text-ink mb-1">
                   Phone
                 </label>
                 <input
@@ -222,11 +222,11 @@ function MyProfile() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
                 />
               </div>
               <div>
-                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="address" className="block text-sm font-medium text-ink mb-1">
                   Address
                 </label>
                 <input
@@ -235,11 +235,11 @@ function MyProfile() {
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
                 />
               </div>
               <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="city" className="block text-sm font-medium text-ink mb-1">
                   City
                 </label>
                 <input
@@ -248,11 +248,11 @@ function MyProfile() {
                   name="city"
                   value={formData.city}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
                 />
               </div>
               <div>
-                <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="state" className="block text-sm font-medium text-ink mb-1">
                   State
                 </label>
                 <input
@@ -261,11 +261,11 @@ function MyProfile() {
                   name="state"
                   value={formData.state}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
                 />
               </div>
               <div>
-                <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="zipCode" className="block text-sm font-medium text-ink mb-1">
                   Zip Code
                 </label>
                 <input
@@ -274,12 +274,12 @@ function MyProfile() {
                   name="zipCode"
                   value={formData.zipCode}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
                 />
               </div>
             </div>
             <div>
-              <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="bio" className="block text-sm font-medium text-ink mb-1">
                 Bio
               </label>
               <textarea
@@ -288,20 +288,20 @@ function MyProfile() {
                 rows="4"
                 value={formData.bio}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
               ></textarea>
             </div>
             <div className="flex justify-end space-x-3">
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100"
+                className="px-4 py-2 border border-line rounded-md text-sm font-medium text-ink hover:bg-cream"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-purple-500 rounded-md text-sm font-medium text-white hover:bg-purple-600"
+                className="px-4 py-2 bg-plum-600 rounded-md text-sm font-medium text-white hover:bg-plum-700"
               >
                 Save Changes
               </button>
@@ -313,14 +313,14 @@ function MyProfile() {
       {/* Password Change Section */}
       {/*<div className="border-t pt-6">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-700">Security</h3>
+          <h3 className="text-xl font-semibold text-ink">Security</h3>
           <button
             type="button"
             onClick={() => setShowPasswordForm(!showPasswordForm)}
             className={`px-4 py-2 rounded-md text-sm font-medium ${
               showPasswordForm 
-                ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' 
-                : 'bg-purple-500 text-white hover:bg-purple-600'
+                ? 'bg-line text-ink hover:bg-plum-50' 
+                : 'bg-plum-600 text-white hover:bg-plum-700'
             }`}
           >
             {showPasswordForm ? 'Cancel' : 'Change Password'}
@@ -330,7 +330,7 @@ function MyProfile() {
          {showPasswordForm && (
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
             <div>
-              <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="currentPassword" className="block text-sm font-medium text-ink mb-1">
                 Current Password
               </label>
               <input
@@ -340,11 +340,11 @@ function MyProfile() {
                 value={passwordData.currentPassword}
                 onChange={handlePasswordChange}
                 required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
               />
             </div>
             <div>
-              <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="newPassword" className="block text-sm font-medium text-ink mb-1">
                 New Password
               </label>
               <input
@@ -354,11 +354,11 @@ function MyProfile() {
                 value={passwordData.newPassword}
                 onChange={handlePasswordChange}
                 required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
               />
             </div>
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-ink mb-1">
                 Confirm New Password
               </label>
               <input
@@ -368,20 +368,20 @@ function MyProfile() {
                 value={passwordData.confirmPassword}
                 onChange={handlePasswordChange}
                 required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
               />
             </div>
             <div className="flex justify-end space-x-3">
               <button
                 type="button"
                 onClick={() => setShowPasswordForm(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100"
+                className="px-4 py-2 border border-line rounded-md text-sm font-medium text-ink hover:bg-cream"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-purple-500 rounded-md text-sm font-medium text-white hover:bg-purple-600"
+                className="px-4 py-2 bg-plum-600 rounded-md text-sm font-medium text-white hover:bg-plum-700"
               >
                 Update Password
               </button>

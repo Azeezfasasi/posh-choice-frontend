@@ -1,5 +1,26 @@
 import React, { useState, useEffect } from 'react';
+import { CheckCircle2, Loader2, PackageCheck, Send, Sparkles, Users } from 'lucide-react';
 import { useQuote } from '../context-api/Request-quote-context/UseQuote';
+
+const CATEGORIES = [
+  'Gift items & souvenirs',
+  'Corporate / event gifting',
+  'Kitchen appliances',
+  'Kitchen equipment',
+  'Household appliances',
+  'Kids party packs',
+  'Snacks',
+  'Wholesale / bulk order',
+  'Other',
+];
+
+const POINTS = [
+  { icon: PackageCheck, text: 'Special pricing on bulk and repeat orders' },
+  { icon: Users, text: 'Gifting for offices, weddings, parties and events' },
+  { icon: Sparkles, text: 'Help choosing the right products for your budget' },
+];
+
+const inputClass = 'w-full h-12 px-4 rounded-xl border border-line bg-white text-ink placeholder:text-ink-soft/70 focus:outline-none focus:border-plum-400 focus:ring-4 focus:ring-plum-100 transition';
 
 function RequestQuote() {
   const [form, setForm] = useState({
@@ -9,13 +30,14 @@ function RequestQuote() {
     service: '',
     message: ''
   });
+  const [submitted, setSubmitted] = useState(false);
   const { submitQuote, loading, error, success } = useQuote();
 
-   useEffect(() => {
-    if (success) {
+  useEffect(() => {
+    if (success && submitted) {
       setForm({ name: '', email: '', phone: '', service: '', message: '' });
     }
-  }, [success]);
+  }, [success, submitted]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -23,130 +45,102 @@ function RequestQuote() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitted(true);
     await submitQuote(form);
-    if (success) setForm({ name: '', email: '', phone: '', service: '', message: '' });
   };
 
   return (
-    <>
-      <div className="min-h-screen bg-gray-100 font-inter flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Left Section */}
-          <div className="flex flex-col justify-center text-center lg:text-left">
-            <h2 className="text-4xl sm:text-5xl lg:text-5xl font-bold text-gray-800 leading-tight mb-6">
-              Need Quality Gift Items or Household Items?
-            </h2>
-            <p className='font-semibold text-[18px]'>Get in Touch with Posh Choice Store Today!</p>
-            <p className="text-base sm:text-lg text-gray-600 leading-relaxed mb-8">
-              Looking for durable gift items, home equipment, kitchen appliances, or other household essentials? We've got you covered with a wide variety of reliable and affordable products for your home and business.
-              <br />
-              Have a question, need a quote, or ready to place an order? We're just a call or message away.
-              Contact us today using the details below or fill out our quick inquiry form — we'll get back to you promptly.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-8 mt-8">
-              <div className="flex items-center space-x-3">
-                {/* Phone icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone text-purple-500">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
-                <span className="text-gray-700">Fast Service: <a href="tel:08029580850" className="text-purple-500 hover:underline">(+234) 08157574797</a></span>
-              </div>
-              <div className="flex items-center space-x-3">
-                {/* Mail icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail text-purple-500">
-                  <rect width="20" height="16" x="2" y="4" rx="2"/>
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-                </svg>
-                <span className="text-gray-700"><a href="mailto:info@poshchoicestore.com.ng" className="text-purple-500 hover:underline">info@poshchoicestore.com.ng</a></span>
-              </div>
-            </div>
-          </div>
+    <section className="bg-cream border-t border-line" id="quote">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-16 grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+        <div className="lg:pt-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold">Request a quote</p>
+          <h2 className="font-display mt-3 text-3xl md:text-4xl font-semibold text-ink leading-tight">
+            Buying in bulk or for an event? Tell us what you need.
+          </h2>
+          <p className="mt-4 text-ink-soft leading-relaxed max-w-lg">
+            From gift items and souvenirs to kitchenware and household essentials, we'll put together a quote for your home,
+            business or celebration and get back to you promptly.
+          </p>
+          <ul className="mt-8 space-y-4">
+            {POINTS.map(({ icon, text }) => {
+              const Icon = icon;
+              return (
+                <li key={text} className="flex items-center gap-3 text-ink">
+                  <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white border border-line text-plum-600">
+                    <Icon className="w-5 h-5" strokeWidth={1.75} />
+                  </span>
+                  {text}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
 
-          {/* Right Section: Free Quote Form */}
-          <div className="bg-gray-50 p-8 rounded-3xl shadow-xl w-full max-w-lg mx-auto border border-solid border-gray-300">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center lg:text-left">Free Quote Request</h2>
+        <div className="rounded-3xl bg-white border border-line p-6 sm:p-8 shadow-[0_12px_40px_-20px_rgba(15,27,61,0.25)]">
+          {submitted && success ? (
+            <div className="py-10 text-center" role="status">
+              <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 mb-4">
+                <CheckCircle2 className="w-7 h-7" />
+              </span>
+              <h3 className="font-display text-2xl font-semibold text-ink">Request sent</h3>
+              <p className="mt-2 text-ink-soft">Thank you! We've emailed you a confirmation and will be in touch shortly.</p>
+              <button type="button" onClick={() => setSubmitted(false)} className="mt-6 text-sm font-semibold text-plum-700 hover:text-plum-800">
+                Send another request
+              </button>
+            </div>
+          ) : (
             <form className="space-y-4" onSubmit={handleSubmit}>
-              {success && <p className="text-green-600 text-center mt-2">{success}</p>}
-              {error && <p className="text-red-600 text-center mt-2">{error}</p>}
+              <h3 className="font-display text-2xl font-semibold text-ink mb-2">Free quote request</h3>
+              {submitted && error && (
+                <p role="alert" className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{error}</p>
+              )}
               <div>
-                <input
-                  type="text"
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder="Full name"
-                  className="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  required
-                />
+                <label htmlFor="quote-name" className="block text-sm font-medium text-ink mb-1.5">Full name</label>
+                <input id="quote-name" type="text" name="name" value={form.name} onChange={handleChange} autoComplete="name" className={inputClass} required />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="quote-email" className="block text-sm font-medium text-ink mb-1.5">Email</label>
+                  <input id="quote-email" type="email" name="email" value={form.email} onChange={handleChange} autoComplete="email" className={inputClass} required />
+                </div>
+                <div>
+                  <label htmlFor="quote-phone" className="block text-sm font-medium text-ink mb-1.5">Phone number</label>
+                  <input id="quote-phone" type="tel" name="phone" value={form.phone} onChange={handleChange} autoComplete="tel" className={inputClass} required />
+                </div>
               </div>
               <div>
-                <input
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="Email"
-                  className="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  required
-                />
-              </div>
-              <div>
-                <input
-                  type="phone"
-                  name="phone"
-                  value={form.phone}
-                  onChange={handleChange}
-                  placeholder="Your Phone Number"
-                  className="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  required
-                />
-              </div>
-              <div>
-                <select
-                  name="service"
-                  value={form.service}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  required
-                >
-                  <option value="">Select Product Category</option>
-                  <option value="Plastic Chairs">Plastic Chairs</option>
-                  <option value="Plastic Tables">Plastic Tables</option>
-                  <option value="Plastic Storage Containers">Plastic Storage Containers</option>
-                  <option value="Kitchenware & Household Plastics">Kitchenware & Household Plastics</option>
-                  <option value="Home Equipment">Home Equipment</option>
-                  <option value="Wholesale / Bulk Order">Wholesale / Bulk Order</option>                  
-                  <option value="Custom Plastic Items">Custom Plastic Items</option>
-                  <option value="Data Recovery">Others</option>
+                <label htmlFor="quote-service" className="block text-sm font-medium text-ink mb-1.5">What are you looking for?</label>
+                <select id="quote-service" name="service" value={form.service} onChange={handleChange} className={inputClass} required>
+                  <option value="">Choose a category</option>
+                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
+                <label htmlFor="quote-message" className="block text-sm font-medium text-ink mb-1.5">Details</label>
                 <textarea
+                  id="quote-message"
                   name="message"
                   value={form.message}
                   onChange={handleChange}
-                  placeholder="Service Needed"
+                  placeholder="Items, quantities, delivery location and date, budget…"
                   rows="5"
-                  className="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                  className="w-full px-4 py-3 rounded-xl border border-line bg-white text-ink placeholder:text-ink-soft/70 focus:outline-none focus:border-plum-400 focus:ring-4 focus:ring-plum-100 transition resize-none"
                   required
                 ></textarea>
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center space-x-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-1"
+                className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-full bg-plum-600 text-white font-semibold hover:bg-plum-700 transition disabled:opacity-60"
               >
-                <span>{loading ? 'Sending...' : 'Request Quote'}</span>
-                {/* Phone icon for the button */}
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone-call">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {loading ? 'Sending…' : 'Request a quote'}
               </button>
             </form>
-          </div>
+          )}
         </div>
       </div>
-    </>
+    </section>
   );
 }
 

@@ -1,98 +1,169 @@
-import React, { useEffect, useState } from 'react';
-import { API_ORIGIN } from '../config/api';
+import React from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
+import { ArrowRight, BookOpen } from 'lucide-react';
+import { Helmet } from 'react-helmet';
+import { API_BASE_URL } from '../config/api';
 import TopHeader from '../assets/components/TopHeader';
 import MainHeader from '../assets/components/MainHeader';
-import { useBlog } from '../assets/context-api/blog-context/UseBlog';
-import { Link } from 'react-router-dom';
-import { FaSpinner } from 'react-icons/fa';
 import Footer from '../assets/components/Footer';
-import { Helmet } from 'react-helmet';
+import PageHeader from '../assets/components/PageHeader';
+import { blogImageUrl, cleanText, excerpt, readingTime, formatPostDate } from '../assets/components/blog/blogUtils';
 
+const chipClass = (active) =>
+  `shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition ${
+    active ? 'border-plum-600 bg-plum-600 text-white' : 'border-line bg-white text-ink hover:border-plum-300 hover:text-plum-700'
+  }`;
+
+function PostImage({ post, featured }) {
+  const src = blogImageUrl(post.image);
+  if (src) {
+    return <img src={src} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />;
+  }
+  // Branded cover for posts without an image
+  return (
+    <div className="relative w-full h-full overflow-hidden bg-gradient-to-br from-plum-700 via-plum-900 to-ink flex flex-col justify-between p-5 md:p-7">
+      <div aria-hidden="true" className="absolute -right-10 -bottom-12 w-48 h-48 rounded-full bg-gold/25 blur-2xl transition-transform duration-500 group-hover:scale-125" />
+      <span className="relative font-display text-white/90 text-lg">Posh Choice<span className="text-gold">.</span></span>
+      <span className={`relative font-display text-gold-soft leading-tight ${featured ? 'text-3xl md:text-4xl' : 'text-2xl'}`}>
+        {post.categories?.[0] || 'Journal'}
+      </span>
+    </div>
+  );
+}
+
+function PostMeta({ post }) {
+  return (
+    <p className="text-xs text-ink-soft">
+      {formatPostDate(post)} · {readingTime(post.content)} min read
+    </p>
+  );
+}
 
 function Blog() {
-  const { blogs, categories, fetchBlogs, loading, error } = useBlog();
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedCategory = searchParams.get('category') || '';
 
-  useEffect(() => {
-    fetchBlogs(selectedCategory ? { category: selectedCategory } : {});
-    // eslint-disable-next-line
-  }, [selectedCategory]);
+  const { data: categories = [] } = useQuery({
+    queryKey: ['blog-categories'],
+    queryFn: async () => (await axios.get(`${API_BASE_URL}/blog/categories`)).data,
+  });
 
-  // Render loading state
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[50vh] bg-gray-50 p-6 rounded-lg ">
-        <FaSpinner className="animate-spin text-purple-500 text-4xl mr-3" />
-        <p className="text-xl text-gray-700">Loading blog page...</p>
-      </div>
-    );
-  }
-  
+  // Only published posts are shown publicly (also when an admin is signed in)
+  const { data: posts = [], isPending, isError } = useQuery({
+    queryKey: ['blog-posts', selectedCategory],
+    queryFn: async () => {
+      const res = await axios.get(`${API_BASE_URL}/blog`, {
+        params: { status: 'published', category: selectedCategory || undefined },
+      });
+      return res.data.filter(post => post.status === 'published');
+    },
+  });
+
+  const [featured, ...rest] = posts;
+
   return (
     <>
       <Helmet>
         <title>Blog - Posh Choice Store</title>
+        <meta name="description" content="Gift ideas, kitchen tips and home inspiration from the Posh Choice Store team." />
       </Helmet>
       <TopHeader />
       <MainHeader />
-      <div className="max-w-5xl mx-auto mt-8 px-4">
-        <h2 className="text-3xl font-bold mb-6 text-center">Our Blog</h2>
-        <div className="mb-6 flex flex-wrap gap-3 justify-center">
-          <button
-            className={`px-4 py-2 rounded ${selectedCategory === '' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-            onClick={() => setSelectedCategory('')}
-          >
-            All
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              className={`px-4 py-2 rounded ${selectedCategory === cat ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-              onClick={() => setSelectedCategory(cat)}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-        {error && <div className="text-red-600 text-center mb-4">{error}</div>}
-        {loading ? (
-          <div className="text-center py-8">Loading...</div>
-        ) : blogs.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">No blog posts found.</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {blogs.map((blog) => (
-              <div key={blog._id} className="bg-white rounded-lg shadow p-6 flex flex-col">
-                <Link to={`/app/blogdetails/${blog._id}`} className="group">
-                {blog.image && (
-                  <img
-                    src={blog.image.startsWith('http') ? blog.image : `${API_ORIGIN}${blog.image}`}
-                    alt={blog.title}
-                    className="h-48 w-full object-cover rounded mb-4"
-                  />
-                )}
-                </Link>
-                <Link to={`/app/blogdetails/${blog._id}`} className="group">
-                    <h3 className="text-xl font-bold mb-2">{blog.title}</h3>
-                </Link>
-                <div className="text-gray-600 text-sm mb-2">
-                  By {blog.author?.name || 'Unknown'} | {new Date(blog.createdAt).toLocaleDateString()}
-                </div>
-                <div className="mb-2">
-                  {blog.categories && blog.categories.map((cat) => (
-                    <span key={cat} className="inline-block bg-blue-100 text-purple-500 px-2 py-1 rounded text-xs mr-2">
-                      {cat}
-                    </span>
-                  ))}
-                </div>
-                <Link to={`/app/blogdetails/${blog._id}`} className="text-purple-500 hover:underline mb-4">
-                  Read more →
-                </Link>
+      <main>
+        <PageHeader
+          title="The Posh Choice blog"
+          subtitle="Gift ideas, kitchen tips and inspiration for your home and events."
+          crumbs={[{ label: 'Blog' }]}
+        />
+
+        <section className="bg-white">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
+            {categories.length > 0 && (
+              <div className="mb-8 flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap" role="group" aria-label="Filter by topic">
+                <button type="button" className={chipClass(!selectedCategory)} onClick={() => setSearchParams({})}>All posts</button>
+                {categories.map(cat => (
+                  <button key={cat} type="button" className={chipClass(selectedCategory === cat)} aria-pressed={selectedCategory === cat}
+                    onClick={() => setSearchParams({ category: cat })}>
+                    {cat}
+                  </button>
+                ))}
               </div>
-            ))}
+            )}
+
+            {isPending ? (
+              <div className="grid md:grid-cols-3 gap-6" aria-busy="true">
+                <div className="md:col-span-3 h-80 rounded-3xl bg-cream animate-pulse" />
+                {[0, 1, 2].map(i => <div key={i} className="h-72 rounded-3xl bg-cream animate-pulse" />)}
+              </div>
+            ) : isError || posts.length === 0 ? (
+              <div className="flex flex-col items-center text-center py-16 px-4 rounded-3xl border border-dashed border-line bg-cream">
+                <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-plum-50 text-plum-600 mb-4">
+                  <BookOpen className="w-7 h-7" strokeWidth={1.75} />
+                </span>
+                <h2 className="font-display text-xl font-semibold text-ink">
+                  {isError ? "We couldn't load the blog" : 'No posts yet'}
+                </h2>
+                <p className="mt-2 text-sm text-ink-soft max-w-sm">
+                  {isError ? 'Please refresh the page or try again later.' : selectedCategory ? `There are no posts in ${selectedCategory} yet.` : 'New articles are on the way. Check back soon.'}
+                </p>
+                <Link to="/app/shop" className="mt-5 rounded-full bg-plum-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-plum-700 transition">Browse the shop</Link>
+              </div>
+            ) : (
+              <>
+                {/* Featured (latest) post */}
+                <Link to={`/app/blogdetails/${featured._id}`} className="group grid md:grid-cols-2 rounded-3xl border border-line overflow-hidden bg-white hover:shadow-[0_16px_40px_-20px_rgba(15,27,61,0.3)] transition">
+                  <div className="aspect-[16/10] md:aspect-auto md:min-h-80 overflow-hidden bg-cream">
+                    <PostImage post={featured} featured />
+                  </div>
+                  <div className="p-6 md:p-10 flex flex-col justify-center">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold">
+                      Latest{featured.categories?.[0] ? ` · ${featured.categories[0]}` : ''}
+                    </p>
+                    <h2 className="font-display mt-3 text-2xl md:text-3xl font-semibold text-ink leading-tight group-hover:text-plum-700 transition">
+                      {cleanText(featured.title)}
+                    </h2>
+                    <p className="mt-3 text-ink-soft leading-relaxed">{excerpt(featured.content, 220)}</p>
+                    <div className="mt-5 flex items-center justify-between gap-4">
+                      <PostMeta post={featured} />
+                      <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-plum-700">
+                        Read article <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+
+                {rest.length > 0 && (
+                  <ul className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {rest.map(post => (
+                      <li key={post._id}>
+                        <Link to={`/app/blogdetails/${post._id}`} className="group flex flex-col h-full rounded-3xl border border-line overflow-hidden bg-white hover:-translate-y-1 hover:shadow-[0_16px_40px_-20px_rgba(15,27,61,0.3)] transition">
+                          <div className="aspect-[16/10] overflow-hidden bg-cream">
+                            <PostImage post={post} />
+                          </div>
+                          <div className="flex flex-col flex-1 p-5">
+                            {post.categories?.[0] && (
+                              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold">{post.categories[0]}</p>
+                            )}
+                            <h3 className="font-display mt-2 text-xl font-semibold text-ink leading-snug group-hover:text-plum-700 transition line-clamp-2">
+                              {cleanText(post.title)}
+                            </h3>
+                            <p className="mt-2 text-sm text-ink-soft leading-relaxed line-clamp-3">{excerpt(post.content)}</p>
+                            <div className="mt-auto pt-4">
+                              <PostMeta post={post} />
+                            </div>
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            )}
           </div>
-        )}
-      </div>
+        </section>
+      </main>
       <Footer />
     </>
   );

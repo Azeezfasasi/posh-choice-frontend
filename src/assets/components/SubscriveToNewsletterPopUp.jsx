@@ -36,32 +36,32 @@ function SubscribeToNewsletterPopUp() {
   };
 
   return (
-    <>
-    <div className="flex flex-col flex-1 border border-solid border-gray-400 justify-start items-center py-4 rounded-md">
-        {success && <p className="text-green-400 text-xs mt-2">{success}</p>}
-        {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
-        <form className="w-[90%] md:w-[60%] flex flex-col sm:flex-col items-center gap-2" onSubmit={handleSubmit}>
+    <div className="w-full">
+      <form className="flex flex-col sm:flex-row gap-2" onSubmit={handleSubmit}>
+        <label htmlFor="popup-newsletter-email" className="sr-only">Email address</label>
         <input
-            type="email"
-            placeholder="Your email address"
-            className="w-full px-3 py-2 rounded text-purple-500 focus:outline-purple-500 borde border-solid border-purple-500 outline"
-            required
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            disabled={mutation.isPending}
+          id="popup-newsletter-email"
+          type="email"
+          placeholder="Your email address"
+          className="flex-1 min-w-0 h-12 px-4 rounded-full bg-cream border border-line text-sm text-ink placeholder:text-ink-soft/80 focus:outline-none focus:bg-white focus:border-plum-400 focus:ring-4 focus:ring-plum-100 transition"
+          required
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          disabled={mutation.isPending}
         />
         <button
-            type="submit"
-            className="w-[200px] bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded transition cursor-pointer"
-            disabled={mutation.isPending}
+          type="submit"
+          className="h-12 px-6 rounded-full bg-plum-600 hover:bg-plum-700 text-white text-sm font-semibold transition disabled:opacity-60 cursor-pointer"
+          disabled={mutation.isPending}
         >
-            {mutation.isPending ? 'Subscribing...' : 'Subscribe'}
+          {mutation.isPending ? 'Subscribing...' : 'Subscribe'}
         </button>
-        </form>
-        {success && <p className="text-green-400 text-xs mt-2">{success}</p>}
-        {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
-    </div>   
-    </>
+      </form>
+      <div aria-live="polite" className="text-center">
+        {success && <p className="text-emerald-600 text-sm mt-3">{success}</p>}
+        {error && <p className="text-red-600 text-sm mt-3">{error}</p>}
+      </div>
+    </div>
   )
 }
 

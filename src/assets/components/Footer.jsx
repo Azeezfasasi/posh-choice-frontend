@@ -3,47 +3,79 @@ import { Mail, Phone, MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import SubscribeToNewsletter from './SubscribeToNewsletter'
 
+const SHOP_LINKS = [
+  { to: '/app/shop', label: 'All products' },
+  { to: '/app/trackorder', label: 'Track your order' },
+  { to: '/app/cart', label: 'Cart' },
+  { to: '/app/wishlist', label: 'Wishlist' },
+];
+
+const COMPANY_LINKS = [
+  { to: '/aboutus', label: 'About us' },
+  { to: '/app/blog', label: 'Blog' },
+  { to: '/contactus', label: 'Contact us' },
+  { to: '/quoterequest', label: 'Request a quote' },
+];
+
+function FooterLinks({ title, links }) {
+  return (
+    <div>
+      <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-gold mb-4">{title}</h3>
+      <ul className="space-y-2.5">
+        {links.map(link => (
+          <li key={link.to}>
+            <Link to={link.to} className="text-sm text-white/70 hover:text-white transition">{link.label}</Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function Footer() {
   return (
-    <footer className="bg-purple-900 text-white pt-10 pb-4 px-4">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:justify-between gap-8">
-        {/* Company Info */}
-        <div className="flex-1 mb-6 md:mb-0">
-          <h2 className="text-2xl font-bold mb-2">Posh Choice Store</h2>
-          <p className="mb-4 text-gray-300">
-            Posh Choice Store is a trusted eCommerce destination for high-quality souvenirs, household materials and household essentials. We offer a wide range of products including gift items, kitchen equipment, and household supplies to meet your everyday needs.
+    <footer className="bg-ink text-white">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 pt-14 pb-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.6fr]">
+        {/* Brand & contact */}
+        <div>
+          <Link to="/" className="inline-block font-display text-2xl font-semibold tracking-tight">
+            Posh Choice<span className="text-gold">.</span>
+          </Link>
+          <p className="mt-3 text-sm text-white/65 leading-relaxed max-w-xs">
+            Quality household essentials, kitchenware, gift items and souvenirs, for homes, businesses and events.
           </p>
-          <div className="flex items-center mb-2">
-            <Phone className="w-5 h-5 mr-2 text-[#00B9F1]" />
-            <a href="tel:08157574797" className="text-white hover:text-[#00B9F1] transition">(+234) 08157574797</a>
-          </div>
-          <div className="flex items-center mb-2">
-            <Mail className="w-6 h-6 mr-2 text-[#00B9F1]" />
-            <a href="mailto:info@poshchoicestore.com.ng" className="text-white hover:text-[#00B9F1] transition">info@poshchoicestore.com.ng</a>
-          </div>
-          <div className="flex items-center">
-            <MapPin className="w-5 h-5 mr-2 text-[#00B9F1]" />
-            <span className="text-white">Ikotun, Lagos</span>
-          </div>
-        </div>
-
-        {/* Quick Links */}
-        <div className="flex-1 mb-6 md:mb-0">
-          <h3 className="text-lg font-semibold mb-3">Quick Links</h3>
-          <ul className="space-y-2">
-            <li><Link to="/" className="hover:text-[#00B9F1] transition">Home</Link></li>
-            <li><Link to="/app/shop"className="hover:text-[#00B9F1] transition">Shop</Link></li>
-            <li><Link to="/app/cart" className="hover:text-[#00B9F1] transition">Cart</Link></li>
-            <li><Link to="/contactus" className="hover:text-[#00B9F1] transition">Contact Us</Link></li>
-            <li><Link to="/quoterequest" className="hover:text-[#00B9F1] transition">Get Free Quote</Link></li>
+          <ul className="mt-5 space-y-2.5 text-sm">
+            <li>
+              <a href="tel:+2348157574797" className="flex items-center gap-2.5 text-white/80 hover:text-white transition">
+                <Phone className="w-4 h-4 text-gold" /> (+234) 08157574797
+              </a>
+            </li>
+            <li>
+              <a href="mailto:info@poshchoicestore.com.ng" className="flex items-center gap-2.5 text-white/80 hover:text-white transition break-all">
+                <Mail className="w-4 h-4 text-gold shrink-0" /> info@poshchoicestore.com.ng
+              </a>
+            </li>
+            <li className="flex items-center gap-2.5 text-white/80">
+              <MapPin className="w-4 h-4 text-gold" /> Ikotun, Lagos
+            </li>
           </ul>
         </div>
+
+        <FooterLinks title="Shop" links={SHOP_LINKS} />
+        <FooterLinks title="Company" links={COMPANY_LINKS} />
 
         {/* Newsletter */}
         <SubscribeToNewsletter />
       </div>
-      <div className="border-t border-gray-500 mt-8 pt-4 text-center text-gray-100 text-xs">
-        &copy; {new Date().getFullYear()} Posh Choice Store. All rights reserved. Developed and maintained by <a href="https://wa.me/8117256648" className="text-[#00B9F1] hover:text-[#00B9F1] transition">Sense Solutions</a>.
+
+      <div className="border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-white/55">
+          <p>&copy; {new Date().getFullYear()} Posh Choice Store. All rights reserved.</p>
+          <p>
+            Developed and maintained by{' '}
+            <a href="https://wa.me/8117256648" target="_blank" rel="noopener noreferrer" className="text-white/80 hover:text-white transition">Sense Solutions</a>
+          </p>
+        </div>
       </div>
     </footer>
   )

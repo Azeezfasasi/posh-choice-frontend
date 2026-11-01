@@ -194,7 +194,7 @@ function EditProductCategoriesMain() {
           {imageFile && (
             <div className="mb-2 flex items-center gap-3">
               <img src={URL.createObjectURL(imageFile)} alt="New Preview" className="w-20 h-20 object-cover rounded border" />
-              <span className="text-sm text-gray-500">(New image preview)</span>
+              <span className="text-sm text-ink-soft">(New image preview)</span>
               <button type="button" onClick={handleClearImage} className="text-red-600 underline text-sm">Remove</button>
             </div>
           )}
@@ -210,14 +210,14 @@ function EditProductCategoriesMain() {
         <div className="flex gap-4 mt-6">
           <button
             type="submit"
-            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 cursor-pointer"
+            className="bg-plum-600 text-white px-4 py-2 rounded hover:bg-plum-700 cursor-pointer"
             disabled={mutation.isPending}
           >
             {mutation.isPending ? 'Saving...' : 'Save Changes'}
           </button>
           <button
             type="button"
-            className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 cursor-pointer"
+            className="bg-line text-ink px-4 py-2 rounded hover:bg-plum-100 cursor-pointer"
             onClick={() => navigate('/app/productcategories')}
           >
             Cancel

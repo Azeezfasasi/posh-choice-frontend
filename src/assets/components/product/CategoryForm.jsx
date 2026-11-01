@@ -175,15 +175,15 @@ const handleSubmit = async (e) => {
   const parentOptions = categories.filter(cat => !isEditMode || cat._id !== id);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white rounded-lg ring-1 ring-line p-6">
       <div className="flex items-center mb-6">
         <button 
           onClick={() => navigate(returnPath)}
-          className="text-purple-500 hover:text-purple-600 mr-4 cursor-pointer"
+          className="text-plum-700 hover:text-plum-800 mr-4 cursor-pointer"
         >
           <FaArrowLeft size={20} />
         </button>
-        <h2 className="text-2xl font-bold text-gray-800">
+        <h2 className="text-2xl font-bold text-ink">
           {isEditMode ? 'Edit Category' : 'Add New Category'}
         </h2>
       </div>
@@ -217,7 +217,7 @@ const handleSubmit = async (e) => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="name" className="block text-sm font-medium text-ink mb-1">
               Category Name*
             </label>
             <input
@@ -226,7 +226,7 @@ const handleSubmit = async (e) => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className={`w-full border ${validationErrors.name ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500`}
+              className={`w-full border ${validationErrors.name ? 'border-red-500' : 'border-line'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200`}
             />
             {validationErrors.name && (
               <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>
@@ -234,7 +234,7 @@ const handleSubmit = async (e) => {
           </div>
           
           <div>
-            <label htmlFor="parent" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="parent" className="block text-sm font-medium text-ink mb-1">
               Parent Category
             </label>
             <select
@@ -242,7 +242,7 @@ const handleSubmit = async (e) => {
               name="parent"
               value={formData.parent}
               onChange={handleChange}
-              className={`w-full border ${validationErrors.parent ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500`}
+              className={`w-full border ${validationErrors.parent ? 'border-red-500' : 'border-line'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200`}
             >
               <option value="">None (Top Level)</option>
               {parentOptions.map(category => (
@@ -257,7 +257,7 @@ const handleSubmit = async (e) => {
           </div>
           
           <div>
-            <label htmlFor="sortOrder" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="sortOrder" className="block text-sm font-medium text-ink mb-1">
               Sort Order
             </label>
             <input
@@ -267,9 +267,9 @@ const handleSubmit = async (e) => {
               value={formData.sortOrder}
               onChange={handleChange}
               min="0"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
             />
-            <p className="text-gray-500 text-xs mt-1">Lower numbers appear first</p>
+            <p className="text-ink-soft text-xs mt-1">Lower numbers appear first</p>
           </div>
           
           <div className="flex items-center pt-7">
@@ -279,16 +279,16 @@ const handleSubmit = async (e) => {
               name="isActive"
               checked={formData.isActive}
               onChange={handleChange}
-              className="h-4 w-4 text-blue-600 focus:ring-purple-500 border-gray-300 rounded"
+              className="h-4 w-4 text-plum-700 focus:ring-plum-200 border-line rounded"
             />
-            <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
+            <label htmlFor="isActive" className="ml-2 block text-sm text-ink">
               Active
             </label>
           </div>
         </div>
         
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="description" className="block text-sm font-medium text-ink mb-1">
             Description
           </label>
           <textarea
@@ -297,13 +297,13 @@ const handleSubmit = async (e) => {
             value={formData.description}
             onChange={handleChange}
             rows="4"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
           ></textarea>
         </div>
         
         {/* Category Image */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-ink mb-2">
             Category Image
           </label>
           
@@ -323,12 +323,12 @@ const handleSubmit = async (e) => {
               </button>
             </div>
           ) : (
-            <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center">
+            <div className="border-2 border-dashed border-line rounded-md p-6 text-center">
               <div className="flex justify-center">
-                <FaImage className="text-gray-400 text-4xl mb-3" />
+                <FaImage className="text-ink-soft/70 text-4xl mb-3" />
               </div>
-              <p className="text-gray-500 mb-2">Click to upload category image</p>
-              <p className="text-xs text-gray-400 mb-4">PNG, JPG, GIF up to 2MB</p>
+              <p className="text-ink-soft mb-2">Click to upload category image</p>
+              <p className="text-xs text-ink-soft/70 mb-4">PNG, JPG, GIF up to 2MB</p>
               <input
                 type="file"
                 id="image"
@@ -339,7 +339,7 @@ const handleSubmit = async (e) => {
               />
               <label
                 htmlFor="image"
-                className="inline-flex items-center px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 cursor-pointer"
+                className="inline-flex items-center px-4 py-2 bg-plum-600 text-white rounded-md hover:bg-plum-700 cursor-pointer"
               >
                 <FaUpload className="mr-2" />
                 Select Image
@@ -357,14 +357,14 @@ const handleSubmit = async (e) => {
           <button
             type="button"
             onClick={() => navigate(returnPath)}
-            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
+            className="px-4 py-2 border border-line rounded-md text-sm font-medium text-ink hover:bg-cream cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-4 py-2 bg-purple-500 border border-transparent rounded-md text-sm font-medium text-white hover:bg-purple-700 flex items-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="px-4 py-2 bg-plum-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-plum-800 flex items-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {isSubmitting ? (
               <>

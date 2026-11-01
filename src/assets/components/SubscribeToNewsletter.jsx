@@ -36,32 +36,34 @@ function SubscribeToNewsletter() {
   };
 
   return (
-    <>
-    <div className="flex-1">
-        <h3 className="text-lg font-semibold mb-3">Subscribe to Our Newsletter</h3>
-        <form className="flex flex-col sm:flex-row gap-2" onSubmit={handleSubmit}>
+    <div>
+      <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-gold mb-4">Stay in the loop</h3>
+      <p className="text-sm text-white/65 mb-4">New arrivals, offers and gift ideas. No spam, unsubscribe any time.</p>
+      <form className="flex flex-col sm:flex-row gap-2" onSubmit={handleSubmit}>
+        <label htmlFor="footer-newsletter-email" className="sr-only">Email address</label>
         <input
-            type="email"
-            placeholder="Your email address"
-            className="px-3 py-2 rounded text-[white] focus:outline-white borde border-solid border-white outline"
-            required
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            disabled={mutation.isPending}
+          id="footer-newsletter-email"
+          type="email"
+          placeholder="Your email address"
+          className="flex-1 min-w-0 h-11 px-4 rounded-full bg-white/10 border border-white/15 text-sm text-white placeholder:text-white/45 focus:outline-none focus:border-gold focus:bg-white/15 transition"
+          required
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          disabled={mutation.isPending}
         />
         <button
-            type="submit"
-            className="bg-[#00B9F1] hover:bg-[#00A1D1] text-white px-4 py-2 rounded transition cursor-pointer"
-            disabled={mutation.isPending}
+          type="submit"
+          className="h-11 px-6 rounded-full bg-gold text-ink text-sm font-semibold hover:bg-[#d6b25e] transition disabled:opacity-60 cursor-pointer"
+          disabled={mutation.isPending}
         >
-            {mutation.isPending ? 'Subscribing...' : 'Subscribe'}
+          {mutation.isPending ? 'Subscribing...' : 'Subscribe'}
         </button>
-        </form>
-        {success && <p className="text-green-400 text-xs mt-2">{success}</p>}
-        {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
-        <p className="text-xs text-gray-300 mt-2">Get the latest updates and offers.</p>
-    </div>   
-    </>
+      </form>
+      <div aria-live="polite">
+        {success && <p className="text-emerald-300 text-xs mt-2">{success}</p>}
+        {error && <p className="text-red-300 text-xs mt-2">{error}</p>}
+      </div>
+    </div>
   )
 }
 

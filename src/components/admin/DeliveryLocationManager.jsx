@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { AlertTriangle, Check, MapPin, Pencil, Plus, Search, Trash2, Truck, X } from 'lucide-react';
 import { useUser } from '../../assets/context-api/user-context/UseUser';
-import { X } from 'lucide-react';
+import { formatNaira } from '../../utils/formatPrice';
 import {
   fetchAllDeliveryLocations,
   createDeliveryLocation,
@@ -9,356 +10,290 @@ import {
   bulkUpdateDeliveryLocationStatus,
 } from '../../services/deliveryLocationApi';
 
+const EMPTY_FORM = { name: '', description: '', shippingAmount: '', isActive: true, sortOrder: 0 };
+
+// A location's name is a comma-separated list of areas ("Ikeja, Ogba, Agege")
+const areasOf = (name = '') => name.split(',').map(a => a.trim()).filter(Boolean);
+
+const inputClass = 'w-full h-11 px-3.5 rounded-xl border border-line bg-white text-ink text-sm placeholder:text-ink-soft/70';
+
+function Switch({ checked, onChange, label, disabled }) {
+  return (
+    <button type="button" role="switch" aria-checked={checked} aria-label={label} disabled={disabled} onClick={onChange}
+      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition disabled:opacity-50 ${checked ? 'bg-emerald-600' : 'bg-line'}`}>
+      <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition ${checked ? 'translate-x-5' : 'translate-x-0.5'}`} />
+    </button>
+  );
+}
+
+function LocationForm({ initial, editing, onCancel, onSave, saving }) {
+  const [form, setForm] = useState(initial);
+  const [formError, setFormError] = useState('');
+  const set = (key, value) => setForm(f => ({ ...f, [key]: value }));
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onCancel(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onCancel]);
+
+  const submit = (e) => {
+    e.preventDefault();
+    const amount = Number(form.shippingAmount);
+    if (!form.name.trim()) return setFormError('Add at least one area.');
+    if (form.shippingAmount === '' || Number.isNaN(amount) || amount < 0) return setFormError('Enter a delivery fee of ₦0 or more.');
+    setFormError('');
+    onSave({ ...form, name: areasOf(form.name).join(', '), shippingAmount: amount, sortOrder: Number(form.sortOrder) || 0 });
+  };
+
+  const areas = areasOf(form.name);
+
+  return (
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="zone-form-title">
+      <button type="button" className="absolute inset-0 bg-ink/40 backdrop-blur-sm" aria-label="Close" onClick={onCancel} />
+      <form onSubmit={submit} className="absolute inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl flex flex-col">
+        <header className="flex items-center justify-between px-6 py-5 border-b border-line">
+          <h2 id="zone-form-title" className="font-display text-xl font-semibold text-ink">{editing ? 'Edit delivery zone' : 'New delivery zone'}</h2>
+          <button type="button" onClick={onCancel} aria-label="Close" className="inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-cream"><X className="w-5 h-5" /></button>
+        </header>
+
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          <div>
+            <label htmlFor="zone-areas" className="block text-sm font-medium text-ink mb-1.5">Areas</label>
+            <textarea id="zone-areas" rows="3" value={form.name} onChange={e => set('name', e.target.value)}
+              placeholder="e.g. Lekki Phase 1, Ajah, Victoria Island" className={`${inputClass} h-auto py-2.5`} />
+            <p className="mt-1.5 text-xs text-ink-soft">Separate areas with commas. Customers see this list at checkout.</p>
+            {areas.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {areas.map((a, i) => <span key={`${a}-${i}`} className="rounded-full bg-plum-50 px-2.5 py-1 text-xs font-medium text-plum-700">{a}</span>)}
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="zone-fee" className="block text-sm font-medium text-ink mb-1.5">Delivery fee (₦)</label>
+              <input id="zone-fee" type="number" min="0" step="100" inputMode="numeric" value={form.shippingAmount}
+                onChange={e => set('shippingAmount', e.target.value)} placeholder="e.g. 3000" className={inputClass} />
+            </div>
+            <div>
+              <label htmlFor="zone-order" className="block text-sm font-medium text-ink mb-1.5">Display order</label>
+              <input id="zone-order" type="number" min="0" value={form.sortOrder} onChange={e => set('sortOrder', e.target.value)} className={inputClass} />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="zone-desc" className="block text-sm font-medium text-ink mb-1.5">
+              Note <span className="font-normal text-ink-soft">(optional, admin only)</span>
+            </label>
+            <input id="zone-desc" type="text" value={form.description} onChange={e => set('description', e.target.value)}
+              placeholder="e.g. Delivered by Dispatch Rider B" className={inputClass} />
+          </div>
+
+          <div className="flex items-center justify-between rounded-xl border border-line px-4 py-3">
+            <div>
+              <p className="text-sm font-medium text-ink">Available at checkout</p>
+              <p className="text-xs text-ink-soft">Turn off to hide this zone from customers.</p>
+            </div>
+            <Switch checked={form.isActive} onChange={() => set('isActive', !form.isActive)} label="Available at checkout" />
+          </div>
+
+          {formError && <p role="alert" className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{formError}</p>}
+        </div>
+
+        <footer className="px-6 py-4 border-t border-line flex justify-end gap-3">
+          <button type="button" onClick={onCancel} className="rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-ink hover:bg-cream">Cancel</button>
+          <button type="submit" disabled={saving} className="rounded-full bg-plum-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-plum-700 disabled:opacity-60">
+            {saving ? 'Saving…' : editing ? 'Save changes' : 'Create zone'}
+          </button>
+        </footer>
+      </form>
+    </div>
+  );
+}
+
 const DeliveryLocationManager = () => {
   const { token } = useUser();
   const [locations, setLocations] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [deleting, setDeleting] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState(null);
+  const [formState, setFormState] = useState(null); // { id?, initial }
+  const [saving, setSaving] = useState(false);
+  const [busyId, setBusyId] = useState(null);
+  const [search, setSearch] = useState('');
 
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    shippingAmount: '',
-    isActive: true,
-    sortOrder: 0,
-  });
+  const showToast = (type, text) => {
+    setToast({ type, text });
+    setTimeout(() => setToast(null), 3500);
+  };
 
-  // Fetch all locations on mount
-  useEffect(() => {
-    loadLocations();
-  }, []);
-
-  const loadLocations = async () => {
+  const loadLocations = useCallback(async () => {
     try {
       setLoading(true);
-      setError('');
-      const data = await fetchAllDeliveryLocations(token);
-      setLocations(data);
+      setLocations(await fetchAllDeliveryLocations(token));
     } catch (err) {
-      setError(err.message);
-      console.error('Error loading locations:', err);
+      showToast('error', err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : (name === 'shippingAmount' ? (value === '' ? '' : parseFloat(value)) : value),
-    }));
-  };
+  useEffect(() => { loadLocations(); }, [loadLocations]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    if (!formData.name.trim() || formData.shippingAmount === '') {
-      setError('Name and shipping amount are required');
-      return;
-    }
-
-    if (formData.shippingAmount < 0) {
-      setError('Shipping amount cannot be negative');
-      return;
-    }
-
+  const save = async (data) => {
+    setSaving(true);
     try {
-      if (editingId) {
-        await updateDeliveryLocation(editingId, formData, token);
-        setSuccess('Delivery location updated successfully');
-      } else {
-        await createDeliveryLocation(formData, token);
-        setSuccess('Delivery location created successfully');
-      }
-      resetForm();
+      if (formState.id) await updateDeliveryLocation(formState.id, data, token);
+      else await createDeliveryLocation(data, token);
+      showToast('success', formState.id ? 'Delivery zone updated.' : 'Delivery zone created.');
+      setFormState(null);
       loadLocations();
     } catch (err) {
-      setError(err.message);
-      console.error('Error saving location:', err);
-    }
-  };
-
-  const handleEdit = (location) => {
-    setFormData({
-      name: location.name,
-      description: location.description || '',
-      shippingAmount: location.shippingAmount,
-      isActive: location.isActive,
-      sortOrder: location.sortOrder || 0,
-    });
-    setEditingId(location._id);
-    setShowForm(true);
-  };
-
-  const handleDelete = async (id, name) => {
-    if (!window.confirm(`Are you sure you want to delete "${name}"?`)) {
-      return;
-    }
-
-    try {
-      setDeleting(id);
-      setError('');
-      await deleteDeliveryLocation(id, token);
-      setSuccess('Delivery location deleted successfully');
-      loadLocations();
-    } catch (err) {
-      setError(err.message);
-      console.error('Error deleting location:', err);
+      showToast('error', err.message);
     } finally {
-      setDeleting(null);
+      setSaving(false);
     }
   };
 
-  const handleToggleStatus = async (id, currentStatus) => {
+  const remove = async (location) => {
+    if (!window.confirm(`Delete this delivery zone (${formatNaira(location.shippingAmount)})? Customers will no longer be able to choose it.`)) return;
+    setBusyId(location._id);
     try {
-      setError('');
-      await bulkUpdateDeliveryLocationStatus([id], !currentStatus, token);
-      setSuccess('Delivery location status updated successfully');
+      await deleteDeliveryLocation(location._id, token);
+      showToast('success', 'Delivery zone deleted.');
       loadLocations();
     } catch (err) {
-      setError(err.message);
-      console.error('Error updating status:', err);
+      showToast('error', err.message);
+    } finally {
+      setBusyId(null);
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      shippingAmount: '',
-      isActive: true,
-      sortOrder: 0,
-    });
-    setEditingId(null);
-    setShowForm(false);
+  const toggle = async (location) => {
+    setBusyId(location._id);
+    try {
+      await bulkUpdateDeliveryLocationStatus([location._id], !location.isActive, token);
+      setLocations(ls => ls.map(l => (l._id === location._id ? { ...l, isActive: !l.isActive } : l)));
+      showToast('success', location.isActive ? 'Zone hidden from checkout.' : 'Zone available at checkout.');
+    } catch (err) {
+      showToast('error', err.message);
+    } finally {
+      setBusyId(null);
+    }
   };
+
+  const sorted = useMemo(
+    () => [...locations].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || a.shippingAmount - b.shippingAmount),
+    [locations]
+  );
+  const term = search.trim().toLowerCase();
+  const visible = term ? sorted.filter(l => l.name.toLowerCase().includes(term) || (l.description || '').toLowerCase().includes(term)) : sorted;
+
+  const active = locations.filter(l => l.isActive);
+  const fees = active.map(l => l.shippingAmount);
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-[22px] md:text-[26px] font-bold text-gray-800 mb-6">Delivery Location Manager</h1>
-
-      {/* Messages */}
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          {error}
+    <div className="space-y-5">
+      {toast && (
+        <div role="status" className={`fixed top-20 right-4 z-[60] flex items-center gap-2 rounded-full px-5 py-3 text-sm font-medium shadow-lg ${toast.type === 'success' ? 'bg-ink text-white' : 'bg-red-600 text-white'}`}>
+          {toast.type === 'success' ? <Check className="w-4 h-4 text-gold" /> : <AlertTriangle className="w-4 h-4" />}
+          {toast.text}
         </div>
       )}
-      {success && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-          {success}
-        </div>
-      )}
-
-      {/* Add/Edit Modal Form */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200 max-w-md w-full">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-800">
-                {editingId ? 'Edit Delivery Location' : 'Add New Delivery Location'}
-              </h2>
-              <button
-                onClick={resetForm}
-                className="text-gray-400 hover:text-gray-600 transition"
-              >
-                <X size={24} />
-              </button>
-            </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Location Name*</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Lekki, Victoria Island"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Shipping Amount (₦)*</label>
-                <input
-                  type="number"
-                  name="shippingAmount"
-                  value={formData.shippingAmount}
-                  onChange={handleInputChange}
-                  placeholder="e.g., 2000"
-                  min="0"
-                  step="100"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Lekki Phase 1, Lekki Phase 2, etc."
-                  rows="2"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
-                <input
-                  type="number"
-                  name="sortOrder"
-                  value={formData.sortOrder}
-                  onChange={handleInputChange}
-                  min="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="flex items-center">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="isActive"
-                    checked={formData.isActive}
-                    onChange={handleInputChange}
-                    className="w-4 h-4 text-blue-600 rounded"
-                  />
-                  <span className="ml-2 text-sm font-medium text-gray-700">Active</span>
-                </label>
-              </div>
-
-              <div className="flex gap-3 justify-end pt-4">
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
-                >
-                  {editingId ? 'Update' : 'Create'} Location
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Add Button */}
-      {!showForm && (
-        <button
-          onClick={() => setShowForm(true)}
-          className="mb-6 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition flex items-center gap-2"
-        >
-          Add New Location
-        </button>
-      )}
-
-      {/* Locations Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Location Name</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Description</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Shipping Amount</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Sort Order</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Status</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center">
-                    <span className="inline-block animate-spin text-blue-600" />
-                  </td>
-                </tr>
-              ) : locations.length === 0 ? (
-                <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
-                    No delivery locations found
-                  </td>
-                </tr>
-              ) : (
-                locations.map(location => (
-                  <tr key={location._id} className="hover:bg-gray-50 transition">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{location.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{location.description || '-'}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">₦{location.shippingAmount.toLocaleString()}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{location.sortOrder}</td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => handleToggleStatus(location._id, location.isActive)}
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition ${
-                          location.isActive
-                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                            : 'bg-red-100 text-red-800 hover:bg-red-200'
-                        }`}
-                      >
-                        {location.isActive ? (
-                          <>
-                            Active
-                          </>
-                        ) : (
-                          <>
-                            Inactive
-                          </>
-                        )}
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex justify-center gap-2">
-                        <button
-                          onClick={() => handleEdit(location)}
-                          className="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition flex items-center gap-1"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(location._id, location.name)}
-                          disabled={deleting === location._id}
-                          className="px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition flex items-center gap-1 disabled:opacity-50"
-                        >
-                          {deleting === location._id ? (
-                            <span className="animate-spin" />
-                          ) : (
-                            <span />
-                          )}
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
 
       {/* Summary */}
-      {!loading && locations.length > 0 && (
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <strong>{locations.filter(l => l.isActive).length}</strong> active locations | 
-            <strong className="ml-2">{locations.filter(l => !l.isActive).length}</strong> inactive locations
-          </p>
+      <div className="grid grid-cols-3 gap-3 md:gap-4">
+        {[
+          ['Active zones', loading ? '…' : `${active.length}${locations.length > active.length ? ` of ${locations.length}` : ''}`],
+          ['Lowest fee', loading || !fees.length ? '—' : formatNaira(Math.min(...fees))],
+          ['Highest fee', loading || !fees.length ? '—' : formatNaira(Math.max(...fees))],
+        ].map(([label, value]) => (
+          <div key={label} className="rounded-2xl border border-line bg-white p-4">
+            <p className="text-xs md:text-sm text-ink-soft">{label}</p>
+            <p className="mt-1 text-lg md:text-2xl font-bold text-ink tabular-nums">{value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Toolbar */}
+      <div className="flex gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-soft pointer-events-none" />
+          <input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Find an area, e.g. Ikeja"
+            aria-label="Search areas" className="w-full h-10 pl-10 pr-3 rounded-full border border-line bg-white text-sm" />
         </div>
+        <button type="button" onClick={() => setFormState({ initial: { ...EMPTY_FORM, sortOrder: locations.length } })}
+          className="shrink-0 inline-flex items-center gap-2 h-10 rounded-full bg-plum-600 px-5 text-sm font-semibold text-white hover:bg-plum-700">
+          <Plus className="w-4 h-4" /> <span className="hidden sm:inline">New zone</span><span className="sm:hidden">New</span>
+        </button>
+      </div>
+
+      {/* Zones */}
+      {loading ? (
+        <div className="space-y-3" aria-busy="true">
+          {[0, 1, 2].map(i => <div key={i} className="h-32 rounded-2xl bg-white border border-line animate-pulse" />)}
+        </div>
+      ) : visible.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-line bg-white py-14 text-center">
+          <Truck className="w-8 h-8 text-ink-soft/60 mx-auto" />
+          <p className="mt-3 font-semibold text-ink">{term ? `No zone covers "${search.trim()}"` : 'No delivery zones yet'}</p>
+          <p className="mt-1 text-sm text-ink-soft">{term ? 'Add it to an existing zone or create a new one.' : 'Customers need at least one zone to check out.'}</p>
+        </div>
+      ) : (
+        <ul className="space-y-3">
+          {visible.map((loc, index) => {
+            const areas = areasOf(loc.name);
+            return (
+              <li key={loc._id} className={`rounded-2xl border bg-white p-4 md:p-5 transition ${loc.isActive ? 'border-line' : 'border-dashed border-line opacity-70'}`}>
+                <div className="flex flex-col md:flex-row md:items-start gap-4">
+                  <div className="md:w-40 shrink-0 flex md:flex-col items-baseline md:items-start justify-between gap-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-ink-soft">Zone {term ? sorted.indexOf(loc) + 1 : index + 1}</p>
+                    <p className="text-2xl font-bold text-ink tabular-nums">{formatNaira(loc.shippingAmount)}</p>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="flex items-center gap-1.5 text-xs font-medium text-ink-soft mb-2">
+                      <MapPin className="w-3.5 h-3.5" /> {areas.length} area{areas.length === 1 ? '' : 's'}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {areas.map((a, i) => (
+                        <span key={`${a}-${i}`}
+                          className={`rounded-full px-2.5 py-1 text-xs font-medium ${term && a.toLowerCase().includes(term) ? 'bg-gold-soft text-ink ring-1 ring-gold' : 'bg-cream text-ink'}`}>
+                          {a}
+                        </span>
+                      ))}
+                    </div>
+                    {loc.description && <p className="mt-2 text-sm text-ink-soft">{loc.description}</p>}
+                  </div>
+
+                  <div className="flex md:flex-col items-center md:items-end justify-between gap-3 shrink-0">
+                    <label className="flex items-center gap-2 text-sm text-ink-soft">
+                      <span className={loc.isActive ? 'text-emerald-700 font-medium' : ''}>{loc.isActive ? 'Live' : 'Hidden'}</span>
+                      <Switch checked={loc.isActive} disabled={busyId === loc._id} onChange={() => toggle(loc)}
+                        label={`${loc.isActive ? 'Hide' : 'Show'} zone ${formatNaira(loc.shippingAmount)} at checkout`} />
+                    </label>
+                    <div className="flex gap-1">
+                      <button type="button" aria-label="Edit zone" title="Edit"
+                        onClick={() => setFormState({ id: loc._id, initial: { name: loc.name, description: loc.description || '', shippingAmount: loc.shippingAmount, isActive: loc.isActive, sortOrder: loc.sortOrder || 0 } })}
+                        className="inline-flex items-center justify-center w-9 h-9 rounded-full text-ink hover:bg-plum-50 hover:text-plum-700">
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button type="button" aria-label="Delete zone" title="Delete" disabled={busyId === loc._id} onClick={() => remove(loc)}
+                        className="inline-flex items-center justify-center w-9 h-9 rounded-full text-ink-soft hover:bg-red-50 hover:text-red-600 disabled:opacity-40">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {formState && (
+        <LocationForm initial={formState.initial} editing={Boolean(formState.id)} saving={saving}
+          onCancel={() => setFormState(null)} onSave={save} />
       )}
     </div>
   );

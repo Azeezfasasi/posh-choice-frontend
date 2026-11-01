@@ -48,8 +48,8 @@ function ViewUserOrderDetailsMain() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <FaSpinner className="animate-spin text-blue-500 text-4xl mb-4" />
-        <p className="text-xl text-gray-700">Loading your order details...</p>
+        <FaSpinner className="animate-spin text-plum-700 text-4xl mb-4" />
+        <p className="text-xl text-ink">Loading your order details...</p>
       </div>
     );
   }
@@ -62,7 +62,7 @@ function ViewUserOrderDetailsMain() {
         <span className="block sm:inline">{error?.message || 'An unknown error occurred.'}</span>
         <button
           onClick={() => refetch()}
-          className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full transition duration-300"
+          className="mt-6 bg-plum-600 hover:bg-plum-700 text-white font-semibold py-2 px-4 rounded-full transition duration-300"
         >
           Retry
         </button>
@@ -71,11 +71,11 @@ function ViewUserOrderDetailsMain() {
   }
 
   if (!order) {
-    return <div className="text-center text-gray-600 py-12">Order not found.</div>;
+    return <div className="text-center text-ink-soft py-12">Order not found.</div>;
   }
 
   return (
-    <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-8 mt-8">
+    <div className="max-w-4xl mx-auto bg-white ring-1 ring-line rounded-lg p-8 mt-8">
         <Link to="/app/userorderdetails" className='flex flex-row justify-start mb-6'>
             <img src={back} alt="Back" className='w-7 h-7 mr-2' /><p className='font-semibold'>Back to Orders</p>
         </Link>
@@ -83,7 +83,7 @@ function ViewUserOrderDetailsMain() {
       <div className="mb-6 flex flex-col sm:flex-row sm:justify-between">
         <div>
           <p className="text-lg font-semibold">Order #: <span className="font-normal">{order.orderNumber}</span></p>
-          <p className="text-lg font-semibold">Status: <span className={`font-bold ml-2 ${order.status === 'Delivered' ? 'text-green-600' : order.status === 'Cancelled' ? 'text-red-600' : 'text-blue-600'}`}>{order.status}</span></p>
+          <p className="text-lg font-semibold">Status: <span className={`font-bold ml-2 ${order.status === 'Delivered' ? 'text-green-600' : order.status === 'Cancelled' ? 'text-red-600' : 'text-plum-700'}`}>{order.status}</span></p>
           <p className="text-lg font-semibold">Date: <span className="font-normal">{new Date(order.createdAt).toLocaleString()}</span></p>
         </div>
         <div className="mt-4 sm:mt-0">
@@ -93,26 +93,26 @@ function ViewUserOrderDetailsMain() {
       </div>
       <div className="mb-6">
         <h3 className="text-xl font-bold mb-2">Shipping Address</h3>
-        <div className="bg-gray-50 p-4 rounded-md">
+        <div className="bg-cream p-4 rounded-md">
           <p>{order.shippingAddress.address1}{order.shippingAddress.address2 ? `, ${order.shippingAddress.address2}` : ''}</p>
           <p>{order.shippingAddress.city}, {order.shippingAddress.state}, {order.shippingAddress.zipCode}</p>
           <p>{order.shippingAddress.country}</p>
-          {order.shippingAddress.note && <p className="italic text-gray-500 mt-1">Note: {order.shippingAddress.note}</p>}
+          {order.shippingAddress.note && <p className="italic text-ink-soft mt-1">Note: {order.shippingAddress.note}</p>}
         </div>
       </div>
       <div className="mb-6">
         <h3 className="text-xl font-bold mb-2">Order Items</h3>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-100">
+          <table className="min-w-full divide-y divide-line">
+            <thead className="bg-cream">
               <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-ink-soft uppercase">Product</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-ink-soft uppercase">Quantity</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-ink-soft uppercase">Price</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-ink-soft uppercase">Total</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-line">
               {order.orderItems.map((item, idx) => (
                 <tr key={idx}>
                   <td className="px-4 py-2 flex items-center gap-2">
@@ -140,7 +140,7 @@ function ViewUserOrderDetailsMain() {
           <p>Items: <span className="font-semibold">₦{order.itemsPrice?.total?.toLocaleString() || order.itemsPrice?.toLocaleString() || '0'}</span></p>
           <p>Tax: <span className="font-semibold">₦{order.taxPrice?.toLocaleString() || '0'}</span></p>
           <p>Shipping: <span className="font-semibold">₦{order.shippingPrice?.toLocaleString() || '0'}</span></p>
-          <p className="text-lg font-bold mt-2">Total: <span className="text-blue-700">₦{order.totalPrice?.toLocaleString() || '0'}</span></p>
+          <p className="text-lg font-bold mt-2">Total: <span className="text-plum-700">₦{order.totalPrice?.toLocaleString() || '0'}</span></p>
         </div>
       </div>
 
@@ -148,27 +148,27 @@ function ViewUserOrderDetailsMain() {
       {order.paymentMethod === 'Bank Transfer' && order.bankTransferProof && (
         <div className="mb-6 border-t pt-6">
           <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <FaImage className="text-purple-500" /> Payment Proof
+            <FaImage className="text-plum-700" /> Payment Proof
           </h3>
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="bg-cream p-4 rounded-lg">
             {order.bankTransferProof.toLowerCase().endsWith('.pdf') ? (
               <div className="flex items-center gap-4">
                 <div className="text-4xl">📄</div>
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-800">Payment Receipt (PDF)</p>
-                  <p className="text-xs text-gray-500 mb-2">Uploaded on: {new Date(order.paymentProofUploadedAt).toLocaleString()}</p>
+                  <p className="font-semibold text-ink">Payment Receipt (PDF)</p>
+                  <p className="text-xs text-ink-soft mb-2">Uploaded on: {new Date(order.paymentProofUploadedAt).toLocaleString()}</p>
                   <div className="flex gap-2 flex-wrap">
                     <a
                       href={order.bankTransferProof}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-purple-600 hover:text-purple-800 hover:underline text-sm font-medium"
+                      className="text-plum-700 hover:text-plum-800 hover:underline text-sm font-medium"
                     >
                       View PDF
                     </a>
                     <button
                       onClick={() => handleDownloadPDF(order.bankTransferProof)}
-                      className="text-purple-600 hover:text-purple-800 hover:underline text-sm font-medium"
+                      className="text-plum-700 hover:text-plum-800 hover:underline text-sm font-medium"
                     >
                       Download PDF
                     </button>
@@ -177,11 +177,11 @@ function ViewUserOrderDetailsMain() {
               </div>
             ) : (
               <div>
-                <p className="text-sm text-gray-600 mb-3">Uploaded on: {new Date(order.paymentProofUploadedAt).toLocaleString()}</p>
+                <p className="text-sm text-ink-soft mb-3">Uploaded on: {new Date(order.paymentProofUploadedAt).toLocaleString()}</p>
                 <img
                   src={order.bankTransferProof}
                   alt="Payment Proof"
-                  className="max-w-xs max-h-96 rounded-md border border-gray-300 shadow-sm"
+                  className="max-w-xs max-h-96 rounded-md border border-line shadow-sm"
                 />
               </div>
             )}
@@ -189,7 +189,7 @@ function ViewUserOrderDetailsMain() {
         </div>
       )}
       <div className="flex justify-between mt-8">
-        <Link to="/app/userorderdetails" className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-6 rounded-full transition duration-300">Back to My Orders</Link>
+        <Link to="/app/userorderdetails" className="bg-line hover:bg-plum-50 text-ink font-semibold py-2 px-6 rounded-full transition duration-300">Back to My Orders</Link>
       </div>
     </div>
   );
