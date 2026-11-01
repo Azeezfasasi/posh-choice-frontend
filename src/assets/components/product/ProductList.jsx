@@ -1,4 +1,5 @@
 import { useEffect, useState, useContext } from 'react'; // Added useContext
+import { API_ORIGIN } from '../../../config/api';
 import { ProductContext } from '../../context-api/product-context/ProductContext';
 // import { CategoryContext } from '../../context-api/';
 import { FaSearch, FaFilter, FaSortAmountDown, FaSortAmountUp, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
@@ -30,7 +31,7 @@ const ProductList = () => {
   const [page, setPage] = useState(1);
 
   // Define API_URL_BASE here or ensure it's imported correctly
-  const API_URL_BASE = import.meta.env.VITE_API_URL || ''; // Fallback for VITE_API_URL
+  const API_URL_BASE = API_ORIGIN;
 
   useEffect(() => {
     loadProducts();

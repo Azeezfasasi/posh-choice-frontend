@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_ORIGIN } from '../../../config/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useProduct } from '../../context-api/product-context/UseProduct';
 import { FaSave, FaArrowLeft, FaUpload, FaImage, FaTimes } from 'react-icons/fa';
@@ -52,7 +53,7 @@ const CategoryForm = () => {
           if (categoryData.image) {
             setImagePreview(categoryData.image.startsWith('http') 
                 ? categoryData.image 
-                : `${import.meta.env.VITE_API_URL || ''}${categoryData.image}`);
+                : `${API_ORIGIN}${categoryData.image}`);
           }
         }
       };

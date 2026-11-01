@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { API_ORIGIN } from '../config/api';
 import { useParams, Link } from 'react-router-dom';
 import TopHeader from '../assets/components/TopHeader';
 import MainHeader from '../assets/components/MainHeader';
@@ -58,7 +59,7 @@ useEffect(() => {
         <article className="bg-white rounded-lg shadow-lg p-6">
           {blog.image && (
             <img
-              src={blog.image.startsWith('http') ? blog.image : `${import.meta.env.VITE_API_URL || ''}${blog.image}`}
+              src={blog.image.startsWith('http') ? blog.image : `${API_ORIGIN}${blog.image}`}
               alt={blog.title}
               className="w-full h-72 object-cover rounded-lg mb-6"
             />

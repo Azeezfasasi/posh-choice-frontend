@@ -96,11 +96,11 @@ function SendNewsletterMain() {
         {error && <div style={{ color: 'red', marginBottom: 12 }}>{error}</div>}
         <button
           type="submit"
-          style={{color: '#fff', padding: '12px 32px', border: 'none', borderRadius: 4, fontWeight: 600, fontSize: 16, cursor: sendNewsletterMutation.isLoading ? 'not-allowed' : 'pointer' }}
+          style={{color: '#fff', padding: '12px 32px', border: 'none', borderRadius: 4, fontWeight: 600, fontSize: 16, cursor: sendNewsletterMutation.isPending ? 'not-allowed' : 'pointer' }}
           className='bg-purple-500'
-          disabled={sendNewsletterMutation.isLoading}
+          disabled={sendNewsletterMutation.isPending}
         >
-          {sendNewsletterMutation.isLoading ? 'Sending...' : 'Send Newsletter'}
+          {sendNewsletterMutation.isPending ? 'Sending...' : 'Send Newsletter'}
         </button>
       </form>
     </div>

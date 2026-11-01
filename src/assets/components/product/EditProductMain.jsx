@@ -6,7 +6,8 @@ import { FaSave, FaArrowLeft, FaTrash } from 'react-icons/fa';
 import { RICHT_TEXT_API } from '../../../config/richText';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { API_BASE_URL } from '../../../config/api';
+import { API_BASE_URL, API_ORIGIN } from '../../../config/api';
+import { compressImages } from '../../../utils/compressImage';
 import back from '../../images/back.svg';
 import { Link } from 'react-router-dom';
 
@@ -207,9 +208,10 @@ const EditProduct = () => {
     }
     // Append new image files if any
     if (imageFiles && imageFiles.length > 0) {
-      imageFiles.forEach((file) => {
+      // Compress first so the upload stays under the host's request size limit
+      for (const file of await compressImages(imageFiles)) {
         dataToSend.append('images', file);
-      });
+      }
     }
     // Only append existingImageUrls if editing and there are existing images
     if (currentImages && currentImages.length > 0 && id) {
@@ -238,7 +240,7 @@ const EditProduct = () => {
   };
 
   // Base URL for Cloudinary images (assuming your backend serves them directly or via a proxy)
-  const API_URL_BASE = import.meta.env.VITE_API_URL;
+  const API_URL_BASE = API_ORIGIN;
 
   const editorRef = useRef(null);
   const handleEditorChange = (content) => {

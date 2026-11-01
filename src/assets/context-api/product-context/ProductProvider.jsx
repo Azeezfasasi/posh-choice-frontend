@@ -2,6 +2,7 @@ import { useState, useEffect, useContext, useCallback, useMemo } from 'react'; /
 import axios from 'axios';
 import { ProductContext } from './ProductContext'; // Correct self-reference
 import { API_BASE_URL } from '../../../config/api'; // Assuming this path is correct
+import { compressImage, compressImages } from '../../../utils/compressImage';
 import { UserContext } from '../user-context/UserContext';
 
 export const ProductProvider = ({ children }) => {
@@ -149,8 +150,9 @@ export const ProductProvider = ({ children }) => {
         }
       });
       if (productData.images) {
-        for (let i = 0; i < productData.images.length; i++) {
-          formData.append('images', productData.images[i]);
+        // Compress first so the upload stays under the host's request size limit
+        for (const image of await compressImages(productData.images)) {
+          formData.append('images', image);
         }
       }
 
@@ -188,8 +190,9 @@ export const ProductProvider = ({ children }) => {
         }
       });
       if (productData.images) {
-        for (let i = 0; i < productData.images.length; i++) {
-          formData.append('images', productData.images[i]);
+        // Compress first so the upload stays under the host's request size limit
+        for (const image of await compressImages(productData.images)) {
+          formData.append('images', image);
         }
       }
 
@@ -476,7 +479,7 @@ export const ProductProvider = ({ children }) => {
       if (categoryData.parent) formData.append('parent', categoryData.parent);
       if (categoryData.sortOrder !== undefined) formData.append('sortOrder', categoryData.sortOrder.toString());
       if (categoryData.isActive !== undefined) formData.append('isActive', categoryData.isActive.toString());
-      if (categoryData.image) formData.append('image', categoryData.image);
+      if (categoryData.image) formData.append('image', await compressImage(categoryData.image));
 
       const response = await axios.post(`${API_BASE_URL}/categories`, formData, {
         headers: {
@@ -511,7 +514,7 @@ export const ProductProvider = ({ children }) => {
         }
       });
       if (categoryData.image) {
-        formData.append('image', categoryData.image);
+        formData.append('image', await compressImage(categoryData.image));
       } else if (categoryData.image === '') { // Explicitly handle image removal
         formData.append('image', '');
       }

@@ -21,7 +21,7 @@ function ForgetPassword() {
     }
     try {
       // Call backend endpoint for password reset
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || `${API_BASE_URL}`}/users/request-password-reset`, {
+      const res = await fetch(`${API_BASE_URL}/users/request-password-reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })

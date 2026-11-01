@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { API_ORIGIN } from '../config/api';
 import TopHeader from '../assets/components/TopHeader';
 import MainHeader from '../assets/components/MainHeader';
 import { useBlog } from '../assets/context-api/blog-context/UseBlog';
@@ -65,7 +66,7 @@ function Blog() {
                 <Link to={`/app/blogdetails/${blog._id}`} className="group">
                 {blog.image && (
                   <img
-                    src={blog.image.startsWith('http') ? blog.image : `${import.meta.env.VITE_API_URL || ''}${blog.image}`}
+                    src={blog.image.startsWith('http') ? blog.image : `${API_ORIGIN}${blog.image}`}
                     alt={blog.title}
                     className="h-48 w-full object-cover rounded mb-4"
                   />

@@ -14,6 +14,9 @@ import Login from './Login';
 import Register from './Register';
 import ForgetPassword from './ForgetPassword';
 import PrivateRoutes from './assets/components/routes/PrivateRoutes';
+import AdminRoutes from './assets/components/routes/AdminRoutes';
+import ResetPassword from './ResetPassword';
+import NotFound from './NotFound';
 import 'rsuite/dist/rsuite-no-reset.min.css';
 import Quote from './app/Quote';
 import { BlogProvider } from './assets/context-api/blog-context/BlogProvider';
@@ -25,7 +28,6 @@ import BlogDetails from './app/BlogDetails';
 import Profile from './app/Profile';
 import AllUsers from './app/AllUsers';
 import AddNewUser from './app/AddNewUser';
-import { Settings } from 'lucide-react';
 import MySettings from './app/MySettings';
 import ChangeUserPassword from './app/ChangeUserPassword';
 import { ProductProvider } from './assets/context-api/product-context/ProductProvider';
@@ -68,6 +70,7 @@ function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/forgetpassword" element={<ForgetPassword />} />
+                  <Route path="/reset-password/:token" element={<ResetPassword />} />
                   <Route path="/" element={<Home />} />
                   <Route path="/aboutus" element={<AboutUs />} />
                   <Route path="/ourservices" element={<OurServices />} />
@@ -83,17 +86,24 @@ function App() {
                   <Route path="/app/checkout" element={<Checkout />} />
                   <Route path="/app/ordersuccess" element={<OrderSuccess />} />
 
-                  {/* Private/protected routes */}
+                  {/* Private/protected routes (any logged-in user) */}
                   <Route element={<PrivateRoutes />}>
                     <Route path="/app/dashboard" element={<Dashboard />} />
+                    <Route path="/app/profile" element={<Profile />} />
+                    <Route path="/app/mysettings" element={<MySettings />} />
+                    <Route path="/app/wishlist" element={<Wishlist />} />
+                    <Route path="/app/userorderdetails" element={<UserOrderDetails />} />
+                    <Route path="/app/viewuserorderdetails/:id" element={<ViewUserOrderDetails />} />
+                  </Route>
+
+                  {/* Admin-only routes */}
+                  <Route element={<AdminRoutes />}>
                     <Route path="/app/quote" element={<Quote />} />
                     <Route path="/app/addnewpost" element={<AddNewPost />} />
                     <Route path="/app/blogposts" element={<BlogPosts />} />
                     <Route path="/app/editblogpost/:id" element={<EditBlogPost />} />
-                    <Route path="/app/profile" element={<Profile />} />
                     <Route path="/app/allusers" element={<AllUsers />} />
                     <Route path="/app/addnewuser" element={<AddNewUser />} />
-                    <Route path="/app/mysettings" element={<MySettings />} />
                     <Route path="/app/changeuserpassword" element={<ChangeUserPassword />} />
                     <Route path="/app/addproduct" element={<AddProduct />} />
                     <Route path="/app/products" element={<Products />} />
@@ -101,17 +111,15 @@ function App() {
                     <Route path="/app/editproductcategories/:id" element={<EditProductCategories />} />
                     <Route path="/app/addproductcategory" element={<AddProductCategory />} />
                     <Route path="/app/editproduct/:id" element={<EditProduct />} />
-                    <Route path="/app/wishlist" element={<Wishlist />} />
-                    <Route path="/app/userorderdetails" element={<UserOrderDetails />} />
                     <Route path="/app/adminorderlist" element={<AdminOrderList />} />
                     <Route path="/app/vieworderdetails/:id" element={<ViewOrderDetails />} />
-                    <Route path="/app/viewuserorderdetails/:id" element={<ViewUserOrderDetails />} />
                     <Route path="/app/sendnewsletter" element={<SendNewsletter />} />
                     <Route path="/app/allnewsletter" element={<AllNewsletter />} />
                     <Route path="/app/Newslettersubscribers" element={<NewsletterSubscribers />} />
-                    <Route path="/app/Newslettersubscribers" element={<NewsletterSubscribers />} />
                     <Route path="/app/delivery-location" element={<DeliveryLocation />} />
                   </Route>
+
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </CartProvider>
             </ProductProvider>

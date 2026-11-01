@@ -8,6 +8,8 @@ import { API_BASE_URL } from '../../../config/api';
 import { fetchDeliveryLocations } from '../../../services/deliveryLocationApi';
 import { uploadPaymentProof } from '../../../services/orderApi';
 
+const MAX_PROOF_SIZE = 4 * 1024 * 1024; // must match the backend upload limit
+
 const CheckoutMain = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -29,6 +31,7 @@ const CheckoutMain = () => {
 
   const [shippingAddress, setShippingAddress] = useState({
     fullName: '',
+    email: '',
     address1: '',
     address2: '',
     city: '',
@@ -71,6 +74,7 @@ const CheckoutMain = () => {
     if (user && user.shippingAddress) {
       setShippingAddress({
         fullName: user.name || '',
+        email: user.email || '',
         address1: user.shippingAddress.address1 || '',
         address2: user.shippingAddress.address2 || '',
         city: user.shippingAddress.city || '',
@@ -81,7 +85,7 @@ const CheckoutMain = () => {
         country: user.shippingAddress.country || 'Nigeria',
       });
     } else if (user) {
-        setShippingAddress(prev => ({ ...prev, fullName: user.name || '' }));
+        setShippingAddress(prev => ({ ...prev, fullName: prev.fullName || user.name || '', email: prev.email || user.email || '' }));
     }
   }, [user]);
 
@@ -111,6 +115,11 @@ const CheckoutMain = () => {
   const handleProofFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.size > MAX_PROOF_SIZE) {
+      setProofError('File is too large. Maximum size is 4MB.');
+      return;
+    }
 
     setProofError(null);
     setProofFile(file);
@@ -195,7 +204,7 @@ const CheckoutMain = () => {
 
   const {
     mutate,
-    isLoading,
+    isPending: isLoading,
     // isError,
     isSuccess,
     // error,
@@ -236,6 +245,7 @@ const CheckoutMain = () => {
   const validateForm = () => {
     const errors = {};
     if (!shippingAddress.fullName.trim()) errors.fullName = 'Full Name is required.';
+    if (deliveryLocations.length > 0 && !selectedDeliveryLocation) errors.deliveryLocation = 'Please select a delivery location.';
     if (!shippingAddress.email.trim()) errors.email = 'Email is required for order notifications.';
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (shippingAddress.email && !emailRegex.test(shippingAddress.email)) {
@@ -317,27 +327,15 @@ const CheckoutMain = () => {
         return;
     }
 
-    // Build paymentResult object based on payment method
-    let paymentResult = {};
-    if (paymentMethod === 'Bank Transfer') {
-      paymentResult = { bankReference };
-    } else if (paymentMethod === 'Credit/Debit Card') {
-      paymentResult = { ...paymentDetails };
-    } else if (paymentMethod === 'WhatsApp') {
-      paymentResult = {
-        whatsappMessage: `Order via WhatsApp: ${cart.items.map(item => `${item.name} x${item.quantity}`).join(', ')}`
-      };
-    }
-
+    // Prices, shipping and totals are calculated by the server from the database;
+    // the totals shown on this page are only an estimate for the customer.
+    // Card details are never sent to our server.
     const orderData = {
-      orderItems: validOrderItems, // Use the filtered valid order items
+      orderItems: validOrderItems.map(({ productId, name, quantity }) => ({ productId, name, quantity })),
       shippingAddress: shippingAddress,
       paymentMethod,
-      paymentResult,
-      itemsPrice: subtotal,
-      taxPrice: taxAmount,
-      shippingPrice: estimatedShipping,
-      totalPrice: totalAmount,
+      deliveryLocationId: selectedDeliveryLocation,
+      bankReference: paymentMethod === 'Bank Transfer' ? bankReference : undefined,
     };
 
     setIsSubmitting(true);
@@ -636,7 +634,7 @@ const CheckoutMain = () => {
                       <FaUpload className="text-purple-500" /> Upload Proof of Payment
                     </h3>
                     <p className="text-xs text-gray-600 mb-3">
-                      Upload a screenshot or receipt of your successful bank transfer (JPEG, PNG, GIF, or PDF - Max 5MB)
+                      Upload a screenshot or receipt of your successful bank transfer (JPEG, PNG, GIF, or PDF - Max 4MB)
                     </p>
 
                     {!proofUrl ? (

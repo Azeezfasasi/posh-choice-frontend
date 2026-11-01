@@ -1,4 +1,6 @@
 import { useEffect, useState, useContext } from 'react';
+import { API_ORIGIN } from '../../../config/api';
+import DOMPurify from 'dompurify';
 import { Editor } from '@tinymce/tinymce-react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { ProductContext } from '../../context-api/product-context/ProductContext';
@@ -222,7 +224,7 @@ const ProductDetailsMain = () => {
     );
   }
 
-  const API_URL_BASE = import.meta.env.VITE_API_URL || '';
+  const API_URL_BASE = API_ORIGIN;
 
   // Determine if product is in wishlist
   const isInWishlist = wishlist?.products?.some(item => item.productId === product._id) || false;
@@ -560,10 +562,9 @@ const ProductDetailsMain = () => {
 
           <div className="mt-6 prose prose-sm max-w-none text-gray-500">
             {product.description ? (
-              <div dangerouslySetInnerHTML={{ __html: product.description }} />
+              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }} />
             ) : (
-              // <p>{product.description}</p>
-              <p dangerouslySetInnerHTML={{ __html: product.description.replace(/\n/g, '<br />') }} />
+              <p>No description available.</p>
             )}
           </div>
         </div>

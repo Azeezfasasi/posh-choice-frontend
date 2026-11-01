@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { API_ORIGIN } from '../../../config/api';
 import { Editor } from '@tinymce/tinymce-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useProduct } from '../../context-api/product-context/UseProduct';
@@ -664,7 +665,7 @@ const ProductForm = () => {
                 {images.map((image, index) => (
                   <div key={`existing-${index}`} className="relative group">
                     <img
-                      src={image.startsWith('http') ? image : `${import.meta.env.VITE_API_URL || ''}${image}`}
+                      src={image.startsWith('http') ? image : `${API_ORIGIN}${image}`}
                       alt={`Product ${index}`}
                       className="h-32 w-full object-cover rounded-md"
                     />

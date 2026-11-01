@@ -77,7 +77,8 @@ function Register() {
               value={form.password}
               onChange={handleChange}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="Create a password"
+              placeholder="Create a password (min. 8 characters)"
+              minLength={8}
               required
             />
           </div>
