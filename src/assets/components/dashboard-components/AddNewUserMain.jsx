@@ -1,331 +1,62 @@
-import React, { useState, useContext } from 'react';
-import { Helmet } from 'react-helmet';
-import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../../context-api/user-context/UserContext';
-import { FaUserPlus, FaLock, FaEnvelope, FaUser, FaUserTag, FaCheck, FaTimes } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { useUser } from '../../context-api/user-context/UseUser';
+import { UserForm } from './UserForms';
 
 function AddNewUserMain() {
-  const navigate = useNavigate();
-  const { createUser, error, success, loading, isAdmin, isSuperAdmin } = useContext(UserContext);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'user',
-    isActive: true
-  });
-  const [formErrors, setFormErrors] = useState({});
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [localSuccess, setLocalSuccess] = useState('');
-  const [localError, setLocalError] = useState('');
+  const { isAdmin, isSuperAdmin } = useUser();
+  const queryClient = useQueryClient();
+  const [created, setCreated] = useState('');
+  const [formKey, setFormKey] = useState(0);
 
   // Non-admins are redirected by the AdminRoute guard in App.jsx
   if (!isAdmin) return null;
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value
-    });
-
-    // Clear field-specific error when user starts typing
-    if (formErrors[name]) {
-      setFormErrors({
-        ...formErrors,
-        [name]: ''
-      });
-    }
-  };
-
-  const validateForm = () => {
-    const errors = {};
-    
-    if (!formData.name.trim()) {
-      errors.name = 'Name is required';
-    }
-    
-    if (!formData.email) {
-      errors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = 'Email is invalid';
-    }
-    
-    if (!formData.password) {
-      errors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
-    }
-    
-    if (formData.password !== formData.confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
-    }
-    
-    return errors;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLocalError('');
-    setLocalSuccess('');
-    
-    // Validate form
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
-    }
-    
-    // Create user data object (excluding confirmPassword)
-    const userData = {
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-      role: formData.role,
-      isActive: formData.isActive
-    };
-    
-    try {
-      await createUser(userData);
-      setLocalSuccess('User created successfully!');
-      
-      // Reset form after successful submission
-      setFormData({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        role: 'user',
-        isActive: true
-      });
-    } catch (err) {
-      setLocalError(err.message || 'Failed to create user. Please try again.');
-    }
+  const done = (message) => {
+    queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+    setCreated(message);
+    setFormKey(k => k + 1); // fresh form for the next user
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <>
-    <div className="bg-white rounded-lg ring-1 ring-line p-6 max-w-3xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-ink flex items-center">
-          <FaUserPlus className="mr-2 text-plum-700" /> Add New User
-        </h1>
+    <div className="max-w-5xl mx-auto grid lg:grid-cols-[minmax(0,1fr)_300px] gap-6 items-start">
+      <div className="min-w-0 space-y-5">
+        <Link to="/app/allusers" className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-soft hover:text-ink">
+          <ArrowLeft className="w-4 h-4" /> All users
+        </Link>
+
+        {created && (
+          <div role="status" className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <p className="font-semibold text-emerald-900">{created}</p>
+              <p className="text-emerald-800">Share the sign-in details with them privately. <Link to="/app/allusers" className="font-semibold underline">View all users</Link></p>
+            </div>
+          </div>
+        )}
+
+        <section className="rounded-2xl border border-line bg-white p-5 md:p-6">
+          <h2 className="font-sans text-lg font-semibold text-ink">Account details</h2>
+          <p className="text-sm text-ink-soft mb-5">Create an account for a customer or a member of your team.</p>
+          <UserForm key={formKey} onDone={done} />
+        </section>
       </div>
-      
-      {(error || localError) && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-md mb-6 flex items-start">
-          <FaTimes className="mr-2 mt-1 flex-shrink-0" />
-          <div>{error || localError}</div>
-        </div>
-      )}
-      
-      {(success || localSuccess) && (
-        <div className="bg-green-50 text-green-600 p-4 rounded-md mb-6 flex items-start">
-          <FaCheck className="mr-2 mt-1 flex-shrink-0" />
-          <div>{success || localSuccess}</div>
-        </div>
-      )}
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Name field */}
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-ink mb-1">
-              Full Name
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaUser className="text-ink-soft/70" />
-              </div>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className={`w-full pl-10 pr-3 py-2 border ${formErrors.name ? 'border-red-500' : 'border-line'} rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
-                placeholder="Enter full name"
-              />
-            </div>
-            {formErrors.name && (
-              <p className="mt-1 text-sm text-red-600">{formErrors.name}</p>
-            )}
-          </div>
-          
-          {/* Email field */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-ink mb-1">
-              Email Address
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaEnvelope className="text-ink-soft/70" />
-              </div>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={`w-full pl-10 pr-3 py-2 border ${formErrors.email ? 'border-red-500' : 'border-line'} rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
-                placeholder="Enter email address"
-              />
-            </div>
-            {formErrors.email && (
-              <p className="mt-1 text-sm text-red-600">{formErrors.email}</p>
-            )}
-          </div>
-          
-          {/* Password field */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-ink mb-1">
-              Password
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaLock className="text-ink-soft/70" />
-              </div>
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className={`w-full pl-10 pr-10 py-2 border ${formErrors.password ? 'border-red-500' : 'border-line'} rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
-                placeholder="Enter password"
-              />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-ink-soft hover:text-ink"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </button>
-            </div>
-            {formErrors.password && (
-              <p className="mt-1 text-sm text-red-600">{formErrors.password}</p>
-            )}
-          </div>
-          
-          {/* Confirm Password field */}
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-ink mb-1">
-              Confirm Password
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaLock className="text-ink-soft/70" />
-              </div>
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className={`w-full pl-10 pr-10 py-2 border ${formErrors.confirmPassword ? 'border-red-500' : 'border-line'} rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
-                placeholder="Confirm password"
-              />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-ink-soft hover:text-ink"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? 'Hide' : 'Show'}
-              </button>
-            </div>
-            {formErrors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-600">{formErrors.confirmPassword}</p>
-            )}
-          </div>
-          
-          {/* Role selection */}
-          <div>
-            <label htmlFor="role" className="block text-sm font-medium text-ink mb-1">
-              User Role
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaUserTag className="text-ink-soft/70" />
-              </div>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="w-full pl-10 pr-3 py-2 border border-line rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200 appearance-none bg-white"
-              >
-                <option value="user">User</option>
-                <option value="customer">Customer</option>
-                {/* Only super admins may create admin accounts (enforced by the server too) */}
-                {isSuperAdmin && <option value="admin">Admin</option>}
-                {isSuperAdmin && <option value="super admin">Super Admin</option>}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg className="h-5 w-5 text-ink-soft/70" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </div>
-            </div>
-          </div>
-          
-          {/* Active Status */}
-          <div className="flex items-center pt-7">
-            <input
-              type="checkbox"
-              id="isActive"
-              name="isActive"
-              checked={formData.isActive}
-              onChange={handleChange}
-              className="h-4 w-4 text-plum-700 border-line rounded focus:ring-plum-200"
-            />
-            <label htmlFor="isActive" className="ml-2 block text-sm text-ink">
-              Active Account
-            </label>
-          </div>
-        </div>
-        
-        <div className="pt-4 border-t border-line">
-          <div className="flex justify-end space-x-3">
-            <button
-              type="button"
-              onClick={() => navigate('/app/allusers')}
-              className="px-4 py-2 border border-line rounded-md text-sm font-medium text-ink hover:bg-cream focus:outline-none focus:ring-2 focus:ring-plum-200 cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-plum-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-plum-700 focus:outline-none focus:ring-2 focus:ring-plum-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center cursor-pointer"
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Creating User...
-                </>
-              ) : (
-                <>Create User</>
-              )}
-            </button>
-          </div>
-        </div>
-      </form>
-      
-      <div className="mt-8">
-        <h3 className="text-sm font-medium text-ink-soft mb-2">Password Requirements:</h3>
-        <ul className="list-disc pl-5 text-xs text-ink-soft space-y-1">
-          <li>Minimum 6 characters in length</li>
-          <li>Consider using a mix of letters, numbers, and symbols for stronger security</li>
-          <li>Avoid using easily guessable information</li>
-        </ul>
-      </div>
+
+      <aside className="rounded-2xl border border-line bg-white p-5 space-y-4 text-sm">
+        <h2 className="flex items-center gap-2 font-sans text-sm font-semibold uppercase tracking-wider text-ink-soft">
+          <ShieldCheck className="w-4 h-4" /> About roles
+        </h2>
+        <dl className="space-y-3">
+          <div><dt className="font-semibold text-ink">Customer</dt><dd className="text-ink-soft">Can shop, track orders and use a wishlist.</dd></div>
+          <div><dt className="font-semibold text-ink">Admin</dt><dd className="text-ink-soft">Manages orders, products, content and customer accounts.</dd></div>
+          <div><dt className="font-semibold text-ink">Super admin</dt><dd className="text-ink-soft">Everything an admin can do, plus managing admin accounts.</dd></div>
+        </dl>
+        {!isSuperAdmin && <p className="rounded-xl bg-cream px-3 py-2 text-xs text-ink-soft">Only a super admin can create admin accounts.</p>}
+      </aside>
     </div>
-    </>
   );
 }
 
