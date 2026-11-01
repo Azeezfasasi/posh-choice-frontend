@@ -25,21 +25,20 @@ export const CartProvider = ({ children }) => {
     return null;
   });
 
-  // Helper function to get request headers
-  const getHeaders = (includeGuest = true) => {
+  // Helper function to get request headers. The guest session ID is always sent so
+  // the server can merge a pre-login guest cart into the user's cart after login.
+  const getHeaders = useCallback(() => {
     const headers = {
       'Content-Type': 'application/json',
     };
-    
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
-    } else if (includeGuest && guestSessionId) {
-      // For guest users, send guest session ID in header
+    }
+    if (guestSessionId) {
       headers['x-guest-session-id'] = guestSessionId;
     }
-    
     return headers;
-  };
+  }, [token, guestSessionId]);
 
   // Utility: Format price in NGN
   const formatPrice = useCallback((price) => {
@@ -88,7 +87,7 @@ export const CartProvider = ({ children }) => {
       setLoading(false);
       clearMessages();
     }
-  }, [guestSessionId]);
+  }, [getHeaders]);
 
   // Updated addToCart to accept and send slug, name, image, price
   const addToCart = useCallback(async (productId, quantity, slug, name, image, price) => {
@@ -112,7 +111,7 @@ export const CartProvider = ({ children }) => {
       setLoading(false);
       clearMessages();
     }
-  }, [guestSessionId]);
+  }, [getHeaders]);
 
   const updateCartItemQuantity = useCallback(async (productId, quantity) => {
     setLoading(true);
@@ -135,7 +134,7 @@ export const CartProvider = ({ children }) => {
       setLoading(false);
       clearMessages();
     }
-  }, [guestSessionId]);
+  }, [getHeaders]);
 
   const removeCartItem = useCallback(async (itemId) => {
     setLoading(true);
@@ -158,7 +157,7 @@ export const CartProvider = ({ children }) => {
       setLoading(false);
       clearMessages();
     }
-  }, [guestSessionId]);
+  }, [getHeaders]);
 
   const clearCart = useCallback(async () => {
     setLoading(true);
@@ -180,7 +179,7 @@ export const CartProvider = ({ children }) => {
       setLoading(false);
       clearMessages();
     }
-  }, [guestSessionId]);
+  }, [getHeaders]);
 
   // --- Wishlist Actions ---
 

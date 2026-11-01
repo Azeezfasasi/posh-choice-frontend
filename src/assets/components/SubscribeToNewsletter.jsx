@@ -47,14 +47,14 @@ function SubscribeToNewsletter() {
             required
             value={email}
             onChange={e => setEmail(e.target.value)}
-            disabled={mutation.isLoading}
+            disabled={mutation.isPending}
         />
         <button
             type="submit"
             className="bg-[#00B9F1] hover:bg-[#00A1D1] text-white px-4 py-2 rounded transition cursor-pointer"
-            disabled={mutation.isLoading}
+            disabled={mutation.isPending}
         >
-            {mutation.isLoading ? 'Subscribing...' : 'Subscribe'}
+            {mutation.isPending ? 'Subscribing...' : 'Subscribe'}
         </button>
         </form>
         {success && <p className="text-green-400 text-xs mt-2">{success}</p>}

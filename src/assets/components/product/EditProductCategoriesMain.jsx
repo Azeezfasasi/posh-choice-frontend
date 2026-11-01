@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { compressImage } from '../../../utils/compressImage';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
@@ -105,7 +106,7 @@ function EditProductCategoriesMain() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setServerError('');
     if (!validate()) return;
@@ -115,7 +116,7 @@ function EditProductCategoriesMain() {
     formData.append('parent', form.parent);
     formData.append('sortOrder', form.sortOrder);
     formData.append('isActive', form.isActive);
-    if (imageFile) formData.append('image', imageFile);
+    if (imageFile) formData.append('image', await compressImage(imageFile));
     if (clearImage) formData.append('clearImage', 'true');
     mutation.mutate({ id, formData });
   };
@@ -210,9 +211,9 @@ function EditProductCategoriesMain() {
           <button
             type="submit"
             className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 cursor-pointer"
-            disabled={mutation.isLoading}
+            disabled={mutation.isPending}
           >
-            {mutation.isLoading ? 'Saving...' : 'Save Changes'}
+            {mutation.isPending ? 'Saving...' : 'Save Changes'}
           </button>
           <button
             type="button"

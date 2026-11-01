@@ -281,8 +281,8 @@ export default function UpdateProductDetails({ productId, onSuccess }) {
           ))}
         </div>
       </div>
-      <button type="submit" disabled={mutation.isLoading}>
-        {mutation.isLoading ? 'Updating...' : 'Update Product'}
+      <button type="submit" disabled={mutation.isPending}>
+        {mutation.isPending ? 'Updating...' : 'Update Product'}
       </button>
       {mutation.isError && <div style={{ color: 'red' }}>{mutation.error?.response?.data?.error || 'Update failed'}</div>}
       {mutation.isSuccess && <div style={{ color: 'green' }}>Product updated successfully!</div>}

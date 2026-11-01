@@ -8,7 +8,7 @@ import { FaUserPlus, FaLock, FaEnvelope, FaUser, FaUserTag, FaCheck, FaTimes } f
 
 function AddNewUserMain() {
   const navigate = useNavigate();
-  const { register, error, success, loading, isAdmin } = useContext(UserContext);
+  const { createUser, error, success, loading, isAdmin, isSuperAdmin } = useContext(UserContext);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -23,11 +23,8 @@ function AddNewUserMain() {
   const [localSuccess, setLocalSuccess] = useState('');
   const [localError, setLocalError] = useState('');
 
-  // Redirect if not admin
-  if (!isAdmin) {
-    navigate('/dashboard');
-    return null;
-  }
+  // Non-admins are redirected by the AdminRoute guard in App.jsx
+  if (!isAdmin) return null;
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -93,7 +90,7 @@ function AddNewUserMain() {
     };
     
     try {
-      await register(userData);
+      await createUser(userData);
       setLocalSuccess('User created successfully!');
       
       // Reset form after successful submission
@@ -106,8 +103,7 @@ function AddNewUserMain() {
         isActive: true
       });
     } catch (err) {
-      console.log(err);
-      setLocalError('Failed to create user. Please try again.');
+      setLocalError(err.message || 'Failed to create user. Please try again.');
     }
   };
 
@@ -264,8 +260,9 @@ function AddNewUserMain() {
               >
                 <option value="user">User</option>
                 <option value="customer">Customer</option>
-                <option value="admin">Admin</option>
-                <option value="super admin">Super Admin</option>
+                {/* Only super admins may create admin accounts (enforced by the server too) */}
+                {isSuperAdmin && <option value="admin">Admin</option>}
+                {isSuperAdmin && <option value="super admin">Super Admin</option>}
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">

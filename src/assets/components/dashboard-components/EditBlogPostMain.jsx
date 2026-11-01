@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { compressImage } from '../../../utils/compressImage';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useBlog } from '../../context-api/blog-context/UseBlog';
 import back from '../../images/back.svg';
@@ -51,7 +52,7 @@ function EditBlogPostMain() {
     formData.append('content', form.content);
     form.categories.forEach(cat => formData.append('categories', cat));
     formData.append('status', form.status);
-    if (form.image) formData.append('image', form.image);
+    if (form.image) formData.append('image', await compressImage(form.image));
     const updated = await editBlog(id, formData);
     if (updated) {
       navigate('/app/blogposts');

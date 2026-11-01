@@ -142,7 +142,7 @@ function AllNewsletterMain() {
                       <button
                         style={{ background: '#ff4d4f', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 18px', fontWeight: 600 }}
                         onClick={() => deleteMutation.mutate(newsletter._id)}
-                        disabled={deleteMutation.isLoading}
+                        disabled={deleteMutation.isPending}
                       >Delete</button>
                     </>
                   )}

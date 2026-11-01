@@ -225,6 +225,7 @@ const AdminAllOrderMain = () => {
             <option value="Shipped">Shipped</option>
             <option value="Delivered">Delivered</option>
             <option value="Cancelled">Cancelled</option>
+            <option value="Refunded">Refunded</option>
           </select>
         </div>
         {searchTerm || filterStatus ? (
@@ -269,7 +270,7 @@ const AdminAllOrderMain = () => {
                     <select
                       value={order.status}
                       onChange={(e) => updateStatusMutation.mutate({ orderId: order._id, status: e.target.value })}
-                      disabled={updateStatusMutation.isLoading}
+                      disabled={updateStatusMutation.isPending}
                       className={`px-2 py-1 rounded-md text-sm font-semibold border ${
                         order.status === 'Delivered' ? 'bg-green-100 text-green-800 border-green-300' :
                         order.status === 'Processing' ? 'bg-blue-100 text-blue-800 border-blue-300' :
@@ -283,13 +284,14 @@ const AdminAllOrderMain = () => {
                       <option value="Shipped">Shipped</option>
                       <option value="Delivered">Delivered</option>
                       <option value="Cancelled">Cancelled</option>
+                      <option value="Refunded">Refunded</option>
                     </select>
                   </td>
                   <td>
                     <select
                       value={order.paymentStatus}
                       onChange={(e) => updatePaymentStatusMutation.mutate({ orderId: order._id, status: e.target.value })}
-                      disabled={updatePaymentStatusMutation.isLoading}
+                      disabled={updatePaymentStatusMutation.isPending}
                       className={`px-2 py-1 rounded-md text-sm font-semibold border ${
                         order.PaymentStatus === 'Paid' ? 'bg-green-400 text-green-800 border-green-300' :
                         order.PaymentStatus === 'Processing' ? 'bg-blue-100 text-blue-800 border-blue-300' :
@@ -317,7 +319,7 @@ const AdminAllOrderMain = () => {
                           deleteOrderMutation.mutate(order._id);
                         }
                       }}
-                      disabled={deleteOrderMutation.isLoading}
+                      disabled={deleteOrderMutation.isPending}
                       className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <FaTrash className="inline-block" /> Delete

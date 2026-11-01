@@ -153,7 +153,7 @@ function NewsletterSubscriberMain() {
                       <button
                         style={{ background: '#ff4d4f', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 18px', fontWeight: 600, marginRight: 8 }}
                         onClick={() => removeMutation.mutate(subscriber._id)}
-                        disabled={removeMutation.isLoading}
+                        disabled={removeMutation.isPending}
                       >Remove</button>
                       <button
                         style={{ background: '#eee', color: '#333', border: 'none', borderRadius: 4, padding: '6px 18px', fontWeight: 600 }}

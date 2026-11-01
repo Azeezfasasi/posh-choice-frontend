@@ -4,15 +4,16 @@ import DashMenu from '../assets/components/dashboard-components/DashMenu'
 import MySettingsMain from '../assets/components/dashboard-components/MySettingsMain'
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 const fetchUsers = async () => {
-    const response = await axios.get('https://itservicepro-backend.onrender.com/api/users/me',);
+    const response = await axios.get(`${API_BASE_URL}/users/me`);
     return response.data;
   };
 
 function MySettings() {
   const { data: user, isLoading, error } = useQuery({
-    queryKey: ['users'],
+    queryKey: ['me'],
     queryFn: fetchUsers,
   });
 

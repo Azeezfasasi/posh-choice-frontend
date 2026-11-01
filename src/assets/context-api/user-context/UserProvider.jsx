@@ -114,6 +114,20 @@ export const UserProvider = ({ children }) => {
   }
 };
 
+  // Admin creates an account; unlike register, this does not log the admin in as the new user
+  const createUser = async (userData) => {
+    setLoading(true); setError(''); setSuccess('');
+    try {
+      const res = await axios.post(`${API_BASE_URL}/users`, userData);
+      setSuccess('User created!');
+      return res.data.user;
+    } catch (err) {
+      const message = err.response?.data?.error || 'Failed to create user.';
+      setError(message);
+      throw new Error(message);
+    } finally { setLoading(false); }
+  };
+
   const editUser = async (id, updates) => {
     setLoading(true); setError(''); setSuccess('');
     try {
@@ -122,7 +136,7 @@ export const UserProvider = ({ children }) => {
       return res.data;
     } catch (err) {
         console.log(err);
-      setError('Failed to update user.');
+      setError(err.response?.data?.error || 'Failed to update user.');
     } finally { setLoading(false); }
   };
 
@@ -133,7 +147,7 @@ export const UserProvider = ({ children }) => {
       setSuccess('User deleted!');
     } catch (err) {
         console.log(err);
-      setError('Failed to delete user.');
+      setError(err.response?.data?.error || 'Failed to delete user.');
     } finally { setLoading(false); }
   };
 
@@ -144,7 +158,7 @@ export const UserProvider = ({ children }) => {
       setSuccess('User disabled!');
     } catch (err) {
         console.log(err);
-      setError('Failed to disable user.');
+      setError(err.response?.data?.error || 'Failed to disable user.');
     } finally { setLoading(false); }
   };
 
@@ -158,7 +172,7 @@ export const UserProvider = ({ children }) => {
     <UserContext.Provider value={{
       user, token, loading, error, success,
       register, login, logout, fetchProfile, updateProfile,
-      getAllUsers, editUser, deleteUser, disableUser,
+      getAllUsers, createUser, editUser, deleteUser, disableUser,
       isSuperAdmin, isAdmin, isUser, isCustomer, userListLoading
     }}>
       {children}

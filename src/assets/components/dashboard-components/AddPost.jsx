@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { compressImage } from '../../../utils/compressImage';
 import { useBlog } from '../../context-api/blog-context/UseBlog';
 
 function AddPost() {
@@ -31,7 +32,7 @@ function AddPost() {
     formData.append('content', form.content);
     form.categories.forEach(cat => formData.append('categories', cat));
     formData.append('status', form.status);
-    if (form.image) formData.append('image', form.image);
+    if (form.image) formData.append('image', await compressImage(form.image));
     await createBlog(formData);
     setForm({ title: '', content: '', categories: [], status: 'draft', image: null });
     // setPreview(null);
