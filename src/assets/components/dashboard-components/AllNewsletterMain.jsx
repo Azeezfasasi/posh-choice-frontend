@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import RichTextEditor from '../RichTextEditor';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { API_BASE_URL } from '../../../config/api';
@@ -85,19 +86,19 @@ function AllNewsletterMain() {
   if (isError) return <div style={{ color: 'red', textAlign: 'center', marginTop: 40 }}>Failed to load newsletters.</div>;
 
   return (
-    <div style={{ maxWidth: 900, margin: '40px auto', background: '#fff', borderRadius: 8, boxShadow: '0 2px 12px #e0e0e0', padding: 32 }}>
-      <h2 style={{ marginBottom: 24 }} className='text-purple-500 font-bold'>All Newsletters</h2>
+    <div style={{ maxWidth: 900, margin: '40px auto', background: '#fff', borderRadius: 8, boxShadow: '0 2px 12px #ece7e1', padding: 32 }}>
+      <h2 style={{ marginBottom: 24 }} className='text-plum-700 font-bold'>All Newsletters</h2>
       {success && <div style={{ color: 'green', marginBottom: 12 }}>{success}</div>}
       {error && <div style={{ color: 'red', marginBottom: 12 }}>{error}</div>}
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 24 }}>
           <thead>
-            <tr style={{ background: '#f5faff' }}>
-              <th style={{ padding: 12, borderBottom: '1px solid #e0e0e0' }}>Subject</th>
-              <th style={{ padding: 12, borderBottom: '1px solid #e0e0e0' }}>Status</th>
-              <th style={{ padding: 12, borderBottom: '1px solid #e0e0e0' }}>Sent At</th>
-              <th style={{ padding: 12, borderBottom: '1px solid #e0e0e0' }}>Recipients</th>
-              <th style={{ padding: 12, borderBottom: '1px solid #e0e0e0' }}>Actions</th>
+            <tr style={{ background: '#faf8f5' }}>
+              <th style={{ padding: 12, borderBottom: '1px solid #ece7e1' }}>Subject</th>
+              <th style={{ padding: 12, borderBottom: '1px solid #ece7e1' }}>Status</th>
+              <th style={{ padding: 12, borderBottom: '1px solid #ece7e1' }}>Sent At</th>
+              <th style={{ padding: 12, borderBottom: '1px solid #ece7e1' }}>Recipients</th>
+              <th style={{ padding: 12, borderBottom: '1px solid #ece7e1' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -105,12 +106,12 @@ function AllNewsletterMain() {
               <tr><td colSpan={5} style={{ textAlign: 'center', padding: 24 }}>No newsletters found.</td></tr>
             )}
             {data && data.map(newsletter => (
-              <tr key={newsletter._id} style={{ background: editId === newsletter._id ? '#f0f8ff' : '#fff' }}>
-                <td style={{ padding: 12, borderBottom: '1px solid #e0e0e0', fontWeight: 500 }}>{newsletter.subject}</td>
-                <td style={{ padding: 12, borderBottom: '1px solid #e0e0e0' }}>{newsletter.status}</td>
-                <td style={{ padding: 12, borderBottom: '1px solid #e0e0e0' }}>{newsletter.sentAt ? new Date(newsletter.sentAt).toLocaleString() : '-'}</td>
-                <td style={{ padding: 12, borderBottom: '1px solid #e0e0e0', maxWidth: 180, wordBreak: 'break-all' }}>{newsletter.recipients?.length || 0}</td>
-                <td style={{ padding: 12, borderBottom: '1px solid #e0e0e0' }}>
+              <tr key={newsletter._id} style={{ background: editId === newsletter._id ? '#f6f1fa' : '#fff' }}>
+                <td style={{ padding: 12, borderBottom: '1px solid #ece7e1', fontWeight: 500 }}>{newsletter.subject}</td>
+                <td style={{ padding: 12, borderBottom: '1px solid #ece7e1' }}>{newsletter.status}</td>
+                <td style={{ padding: 12, borderBottom: '1px solid #ece7e1' }}>{newsletter.sentAt ? new Date(newsletter.sentAt).toLocaleString() : '-'}</td>
+                <td style={{ padding: 12, borderBottom: '1px solid #ece7e1', maxWidth: 180, wordBreak: 'break-all' }}>{newsletter.recipients?.length || 0}</td>
+                <td style={{ padding: 12, borderBottom: '1px solid #ece7e1' }}>
                   {editId === newsletter._id ? (
                     <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       <input
@@ -120,22 +121,19 @@ function AllNewsletterMain() {
                         style={{ padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
                         required
                       />
-                      <textarea
-                        value={editContent}
-                        onChange={e => setEditContent(e.target.value)}
-                        style={{ padding: 6, borderRadius: 4, border: '1px solid #ccc', minHeight: 60 }}
-                        required
-                      />
+                      <div style={{ minWidth: 420 }}>
+                        <RichTextEditor value={editContent} onChange={setEditContent} minHeight={200} placeholder="Newsletter content" />
+                      </div>
                       <div style={{ display: 'flex', gap: 8 }}>
-                        <button type="submit" style={{ background: '#00B9F1', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 18px', fontWeight: 600 }}>Save</button>
-                        <button type="button" style={{ background: '#eee', color: '#333', border: 'none', borderRadius: 4, padding: '6px 18px' }} onClick={() => setEditId(null)}>Cancel</button>
+                        <button type="submit" style={{ background: '#5b2a86', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 18px', fontWeight: 600 }}>Save</button>
+                        <button type="button" style={{ background: '#ece7e1', color: '#0f1b3d', border: 'none', borderRadius: 4, padding: '6px 18px' }} onClick={() => setEditId(null)}>Cancel</button>
                       </div>
                     </form>
                   ) : (
                     <>
                       {newsletter.status === 'draft' && (
                         <button
-                          style={{ background: '#00B9F1', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 18px', fontWeight: 600, marginRight: 8 }}
+                          style={{ background: '#5b2a86', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 18px', fontWeight: 600, marginRight: 8 }}
                           onClick={() => handleEdit(newsletter)}
                         >Edit</button>
                       )}

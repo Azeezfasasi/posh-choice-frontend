@@ -222,19 +222,19 @@ function ChangeUserPasswordMain() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 max-w-xl mx-auto">
+    <div className="bg-white rounded-lg ring-1 ring-line p-6 max-w-xl mx-auto">
       <div className="flex items-center mb-6">
-        <div className="p-3 rounded-full bg-blue-100 text-purple-500 mr-4">
+        <div className="p-3 rounded-full bg-plum-50 text-plum-700 mr-4">
           <FaShieldAlt size={24} />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-2xl font-bold text-ink">
             {isAdminMode && selectedUser 
               ? `Change Password for ${selectedUser.name}` 
               : "Change Password"}
           </h2>
           {isAdmin && (
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-ink-soft mt-1">
               {isAdminMode 
                 ? "Admin mode: Change password for any user" 
                 : "Personal mode: Change your own password"}
@@ -249,7 +249,7 @@ function ChangeUserPasswordMain() {
           <button
             type="button"
             onClick={toggleMode}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+            className="inline-flex items-center px-4 py-2 border border-line rounded-md shadow-sm text-sm font-medium text-ink bg-white hover:bg-cream focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-plum-200"
           >
             <FaUserCog className="mr-2" />
             {isAdminMode ? "Switch to Personal Mode" : "Switch to Admin Mode"}
@@ -275,12 +275,12 @@ function ChangeUserPasswordMain() {
         {/* User Selection (Admin Mode) */}
         {isAdminMode && (
           <div>
-            <label htmlFor="userSearch" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="userSearch" className="block text-sm font-medium text-ink mb-1">
               Select User
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaSearch className="text-gray-400" />
+                <FaSearch className="text-ink-soft/70" />
               </div>
               <input
                 type="text"
@@ -289,8 +289,8 @@ function ChangeUserPasswordMain() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search users by name or email"
                 className={`w-full pl-10 pr-3 py-2 border ${
-                  validationErrors.user ? 'border-red-500' : 'border-gray-300'
-                } rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                  validationErrors.user ? 'border-red-500' : 'border-line'
+                } rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
               />
             </div>
             
@@ -302,32 +302,32 @@ function ChangeUserPasswordMain() {
             )}
             
             {searchTerm && filteredUsers.length > 0 && (
-              <div className="mt-2 max-h-60 overflow-y-auto border border-gray-200 rounded-md shadow-sm">
+              <div className="mt-2 max-h-60 overflow-y-auto border border-line rounded-md shadow-sm">
                 {filteredUsers.map(user => (
                   <button
                     key={user._id}
                     type="button"
                     onClick={() => handleUserSelect(user)}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 focus:outline-none focus:bg-gray-100"
+                    className="w-full text-left px-4 py-2 hover:bg-cream focus:outline-none focus:bg-cream"
                   >
                     <div className="font-medium">{user.name}</div>
-                    <div className="text-sm text-gray-500">{user.email}</div>
+                    <div className="text-sm text-ink-soft">{user.email}</div>
                   </button>
                 ))}
               </div>
             )}
             
             {selectedUser && (
-              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <div className="mt-2 p-3 bg-plum-50 border border-plum-200 rounded-md">
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="font-medium">{selectedUser.name}</p>
-                    <p className="text-sm text-gray-600">{selectedUser.email}</p>
+                    <p className="text-sm text-ink-soft">{selectedUser.email}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setSelectedUser(null)}
-                    className="text-purple-500 hover:text-purple-600"
+                    className="text-plum-700 hover:text-plum-800"
                   >
                     Change
                   </button>
@@ -340,12 +340,12 @@ function ChangeUserPasswordMain() {
         {/* Current Password (only for own password change) */}
         {(!isAdminMode || (isAdminMode && !selectedUser)) && (
           <div>
-            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="currentPassword" className="block text-sm font-medium text-ink mb-1">
               Current Password
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaLock className="text-gray-400" />
+                <FaLock className="text-ink-soft/70" />
               </div>
               <input
                 type={showCurrentPassword ? "text" : "password"}
@@ -354,13 +354,13 @@ function ChangeUserPasswordMain() {
                 value={formData.currentPassword}
                 onChange={handleChange}
                 className={`w-full pl-10 pr-10 py-2 border ${
-                  validationErrors.currentPassword ? 'border-red-500' : 'border-gray-300'
-                } rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                  validationErrors.currentPassword ? 'border-red-500' : 'border-line'
+                } rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
                 placeholder="Enter current password"
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-ink-soft hover:text-ink"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
               >
                 {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
@@ -377,12 +377,12 @@ function ChangeUserPasswordMain() {
 
         {/* New Password */}
         <div>
-          <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="newPassword" className="block text-sm font-medium text-ink mb-1">
             {isAdminMode && selectedUser ? `New Password for ${selectedUser.name}` : "New Password"}
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <FaUnlock className="text-gray-400" />
+              <FaUnlock className="text-ink-soft/70" />
             </div>
             <input
               type={showNewPassword ? "text" : "password"}
@@ -391,13 +391,13 @@ function ChangeUserPasswordMain() {
               value={formData.newPassword}
               onChange={handleChange}
               className={`w-full pl-10 pr-10 py-2 border ${
-                validationErrors.newPassword ? 'border-red-500' : 'border-gray-300'
-              } rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                validationErrors.newPassword ? 'border-red-500' : 'border-line'
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
               placeholder="Enter new password"
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-ink-soft hover:text-ink"
               onClick={() => setShowNewPassword(!showNewPassword)}
             >
               {showNewPassword ? <FaEyeSlash /> : <FaEye />}
@@ -414,7 +414,7 @@ function ChangeUserPasswordMain() {
           {formData.newPassword && (
             <div className="mt-2">
               <div className="flex justify-between items-center mb-1">
-                <span className="text-xs text-gray-500">Password Strength:</span>
+                <span className="text-xs text-ink-soft">Password Strength:</span>
                 <span className={`text-xs font-medium ${
                   passwordStrength === 0 ? 'text-red-500' :
                   passwordStrength === 1 ? 'text-orange-500' :
@@ -422,7 +422,7 @@ function ChangeUserPasswordMain() {
                   'text-green-600'
                 }`}>{strengthLabels[passwordStrength]}</span>
               </div>
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-line rounded-full overflow-hidden">
                 <div 
                   className={`h-full ${strengthColors[passwordStrength]} transition-all duration-300`}
                   style={{ width: `${(passwordStrength + 1) * 25}%` }}
@@ -434,12 +434,12 @@ function ChangeUserPasswordMain() {
 
         {/* Confirm Password */}
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-ink mb-1">
             Confirm New Password
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <FaUnlock className="text-gray-400" />
+              <FaUnlock className="text-ink-soft/70" />
             </div>
             <input
               type={showConfirmPassword ? "text" : "password"}
@@ -448,13 +448,13 @@ function ChangeUserPasswordMain() {
               value={formData.confirmPassword}
               onChange={handleChange}
               className={`w-full pl-10 pr-10 py-2 border ${
-                validationErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-              } rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                validationErrors.confirmPassword ? 'border-red-500' : 'border-line'
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
               placeholder="Confirm new password"
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-ink-soft hover:text-ink"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             >
               {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
@@ -469,32 +469,32 @@ function ChangeUserPasswordMain() {
         </div>
 
         {/* Password requirements */}
-        <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-            <FaInfoCircle className="mr-1 text-blue-500" />
+        <div className="bg-cream p-4 rounded-md border border-line">
+          <h3 className="text-sm font-medium text-ink mb-2 flex items-center">
+            <FaInfoCircle className="mr-1 text-plum-700" />
             Password Requirements:
           </h3>
-          <ul className="space-y-1 text-xs text-gray-600">
+          <ul className="space-y-1 text-xs text-ink-soft">
             <li className="flex items-start">
-              <span className={`mr-1 mt-0.5 ${formData.newPassword.length >= 8 ? 'text-green-500' : 'text-gray-400'}`}>
+              <span className={`mr-1 mt-0.5 ${formData.newPassword.length >= 8 ? 'text-green-500' : 'text-ink-soft/70'}`}>
                 {formData.newPassword.length >= 8 ? <FaCheck /> : '•'}
               </span>
               At least 8 characters
             </li>
             <li className="flex items-start">
-              <span className={`mr-1 mt-0.5 ${/[A-Z]/.test(formData.newPassword) ? 'text-green-500' : 'text-gray-400'}`}>
+              <span className={`mr-1 mt-0.5 ${/[A-Z]/.test(formData.newPassword) ? 'text-green-500' : 'text-ink-soft/70'}`}>
                 {/[A-Z]/.test(formData.newPassword) ? <FaCheck /> : '•'}
               </span>
               At least one uppercase letter
             </li>
             <li className="flex items-start">
-              <span className={`mr-1 mt-0.5 ${/[0-9]/.test(formData.newPassword) ? 'text-green-500' : 'text-gray-400'}`}>
+              <span className={`mr-1 mt-0.5 ${/[0-9]/.test(formData.newPassword) ? 'text-green-500' : 'text-ink-soft/70'}`}>
                 {/[0-9]/.test(formData.newPassword) ? <FaCheck /> : '•'}
               </span>
               At least one number
             </li>
             <li className="flex items-start">
-              <span className={`mr-1 mt-0.5 ${/[^A-Za-z0-9]/.test(formData.newPassword) ? 'text-green-500' : 'text-gray-400'}`}>
+              <span className={`mr-1 mt-0.5 ${/[^A-Za-z0-9]/.test(formData.newPassword) ? 'text-green-500' : 'text-ink-soft/70'}`}>
                 {/[^A-Za-z0-9]/.test(formData.newPassword) ? <FaCheck /> : '•'}
               </span>
               At least one special character
@@ -507,7 +507,7 @@ function ChangeUserPasswordMain() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-500 hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 cursor-pointer ${
+            className={`w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-plum-600 hover:bg-plum-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-plum-200 cursor-pointer ${
               loading ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >
@@ -527,7 +527,7 @@ function ChangeUserPasswordMain() {
       </form>
 
       <div className="mt-6 text-center">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-ink-soft">
           {isAdminMode 
             ? "As an administrator, you can reset passwords for any user in the system." 
             : "Your password is securely stored and never shared with third parties."}

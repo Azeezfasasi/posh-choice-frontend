@@ -168,18 +168,18 @@ function AllUserMain() {
   const getRoleBadgeColor = (role) => {
     switch (role) {
       case 'super admin': return 'bg-red-100 text-red-800';
-      case 'admin': return 'bg-purple-100 text-purple-800';
-      case 'user': return 'bg-blue-100 text-blue-800';
+      case 'admin': return 'bg-plum-50 text-plum-800';
+      case 'user': return 'bg-plum-50 text-plum-800';
       case 'customer': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      default: return 'bg-cream text-ink';
     }
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white rounded-lg ring-1 ring-line p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">User Management</h2>
-        <div className="text-sm bg-blue-100 text-purple-600 px-3 py-1 rounded-full font-medium">
+        <h2 className="text-2xl font-bold text-ink">User Management</h2>
+        <div className="text-sm bg-plum-50 text-plum-700 px-3 py-1 rounded-full font-medium">
           Total Users: {totalUsers}
         </div>
       </div>
@@ -202,7 +202,7 @@ function AllUserMain() {
           <select
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-1 text-sm"
+            className="border border-line rounded-md px-3 py-1 text-sm"
           >
             <option value="all">All Roles</option>
             <option value="super admin">Super Admin</option>
@@ -213,7 +213,7 @@ function AllUserMain() {
           
           <button
             onClick={fetchUsers}
-            className="bg-purple-500 text-white px-3 py-1 rounded-md text-sm hover:bg-purple-600 cursor-pointer"
+            className="bg-plum-600 text-white px-3 py-1 rounded-md text-sm hover:bg-plum-700 cursor-pointer"
           >
             Refresh
           </button>
@@ -225,10 +225,10 @@ function AllUserMain() {
             placeholder="Search users..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="border border-gray-300 rounded-md pl-8 pr-3 py-1 w-full md:w-64 text-sm"
+            className="border border-line rounded-md pl-8 pr-3 py-1 w-full md:w-64 text-sm"
           />
           <svg 
-            className="w-4 h-4 absolute left-2.5 top-2 text-gray-400" 
+            className="w-4 h-4 absolute left-2.5 top-2 text-ink-soft/70" 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24" 
@@ -242,17 +242,17 @@ function AllUserMain() {
       {/* Users Table */}
       {userListLoading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-plum-600"></div>
         </div>
       ) : (
         <>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-line">
+              <thead className="bg-cream">
                 <tr>
                   <th 
                     scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider cursor-pointer"
                     onClick={() => handleSort('name')}
                   >
                     <div className="flex items-center">
@@ -266,7 +266,7 @@ function AllUserMain() {
                   </th>
                   <th 
                     scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider cursor-pointer"
                     onClick={() => handleSort('email')}
                   >
                     <div className="flex items-center">
@@ -280,7 +280,7 @@ function AllUserMain() {
                   </th>
                   <th 
                     scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider cursor-pointer"
                     onClick={() => handleSort('role')}
                   >
                     <div className="flex items-center">
@@ -294,7 +294,7 @@ function AllUserMain() {
                   </th>
                   <th 
                     scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider cursor-pointer"
                     onClick={() => handleSort('createdAt')}
                   >
                     <div className="flex items-center">
@@ -306,43 +306,43 @@ function AllUserMain() {
                       )}
                     </div>
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider">
                     Status
                   </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-ink-soft uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-line">
                 {currentUsers.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                    <td colSpan="6" className="px-6 py-4 text-center text-sm text-ink-soft">
                       No users found
                     </td>
                   </tr>
                 ) : (
                   currentUsers.map((user) => (
-                    <tr key={user._id} className="hover:bg-gray-50">
+                    <tr key={user._id} className="hover:bg-cream">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                            <FaUserAlt className="text-gray-500" />
+                          <div className="flex-shrink-0 h-10 w-10 bg-line rounded-full flex items-center justify-center">
+                            <FaUserAlt className="text-ink-soft" />
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                            <div className="text-sm font-medium text-ink">{user.name}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{user.email}</div>
+                        <div className="text-sm text-ink">{user.email}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleBadgeColor(user.role)}`}>
                           {user.role}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-ink-soft">
                         {new Date(user.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -354,7 +354,7 @@ function AllUserMain() {
                         <div className="flex justify-end space-x-2">
                           <button
                             onClick={() => handleEditClick(user)}
-                            className="text-indigo-600 hover:text-indigo-900 cursor-pointer"
+                            className="text-plum-700 hover:text-plum-900 cursor-pointer"
                             title="Edit User"
                           >
                             <FaEdit size={18} />
@@ -371,7 +371,7 @@ function AllUserMain() {
                           )}
                           <button
                             onClick={() => toggleUserStatus(user)}
-                            className={user.isActive ? "text-purple-600 hover:text-purple-900 cursor-pointer" : "text-green-600 hover:text-green-900 cursor-pointer"}
+                            className={user.isActive ? "text-plum-700 hover:text-plum-900 cursor-pointer" : "text-green-600 hover:text-green-900 cursor-pointer"}
                             title={user.isActive ? "Disable User" : "Enable User"}
                           >
                             {user.isActive ? <FaBan size={18} /> : <FaCheck size={18} />}
@@ -388,7 +388,7 @@ function AllUserMain() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-between items-center mt-6">
-              <div className="text-sm text-gray-700">
+              <div className="text-sm text-ink">
                 Showing <span className="font-medium">{indexOfFirstUser + 1}</span> to{' '}
                 <span className="font-medium">
                   {Math.min(indexOfLastUser, sortedUsers.length)}
@@ -401,8 +401,8 @@ function AllUserMain() {
                   disabled={currentPage === 1}
                   className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                     currentPage === 1
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                      ? 'bg-cream text-ink-soft/70 cursor-not-allowed'
+                      : 'bg-white text-ink hover:bg-cream'
                   }`}
                 >
                   Previous
@@ -413,8 +413,8 @@ function AllUserMain() {
                     onClick={() => paginate(i + 1)}
                     className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                       currentPage === i + 1
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
+                        ? 'bg-plum-600 text-white'
+                        : 'bg-white text-ink hover:bg-cream'
                     }`}
                   >
                     {i + 1}
@@ -425,8 +425,8 @@ function AllUserMain() {
                   disabled={currentPage === totalPages}
                   className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                     currentPage === totalPages
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                      ? 'bg-cream text-ink-soft/70 cursor-not-allowed'
+                      : 'bg-white text-ink hover:bg-cream'
                   }`}
                 >
                   Next
@@ -441,10 +441,10 @@ function AllUserMain() {
       {isEditModalOpen && (
         <div className="fixed inset-0 z-10 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-auto">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Edit User</h3>
+            <h3 className="text-lg font-medium text-ink mb-4">Edit User</h3>
             <form onSubmit={handleEditSubmit}>
               <div className="mb-4">
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="name" className="block text-sm font-medium text-ink mb-1">
                   Name
                 </label>
                 <input
@@ -453,12 +453,12 @@ function AllUserMain() {
                   name="name"
                   value={editFormData.name}
                   onChange={handleEditFormChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-line rounded-md px-3 py-2"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-ink mb-1">
                   Email
                 </label>
                 <input
@@ -467,12 +467,12 @@ function AllUserMain() {
                   name="email"
                   value={editFormData.email}
                   onChange={handleEditFormChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-line rounded-md px-3 py-2"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="role" className="block text-sm font-medium text-ink mb-1">
                   Role
                 </label>
                 <select
@@ -480,7 +480,7 @@ function AllUserMain() {
                   name="role"
                   value={editFormData.role}
                   onChange={handleEditFormChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-line rounded-md px-3 py-2"
                   required
                 >
                   <option value="user">User</option>
@@ -496,9 +496,9 @@ function AllUserMain() {
                   name="isActive"
                   checked={editFormData.isActive}
                   onChange={handleEditFormChange}
-                  className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                  className="h-4 w-4 text-plum-700 border-line rounded"
                 />
-                <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
+                <label htmlFor="isActive" className="ml-2 block text-sm text-ink">
                   Active Account
                 </label>
               </div>
@@ -506,13 +506,13 @@ function AllUserMain() {
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-300 cursor-pointer"
+                  className="bg-line text-ink px-4 py-2 rounded-md text-sm font-medium hover:bg-plum-50 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 cursor-pointer"
+                  className="bg-plum-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-plum-700 cursor-pointer"
                 >
                   Save Changes
                 </button>
@@ -526,15 +526,15 @@ function AllUserMain() {
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-10 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-auto">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Confirm Delete</h3>
-            <p className="text-sm text-gray-500 mb-4">
+            <h3 className="text-lg font-medium text-ink mb-4">Confirm Delete</h3>
+            <p className="text-sm text-ink-soft mb-4">
               Are you sure you want to delete the user <span className="font-medium">{selectedUser?.name}</span>? This action cannot be undone.
             </p>
             <div className="flex justify-end space-x-3">
               <button
                 type="button"
                 onClick={() => setIsDeleteModalOpen(false)}
-                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-300 cursor-pointer"
+                className="bg-line text-ink px-4 py-2 rounded-md text-sm font-medium hover:bg-plum-50 cursor-pointer"
               >
                 Cancel
               </button>

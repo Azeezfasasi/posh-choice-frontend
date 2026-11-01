@@ -1,6 +1,5 @@
 import { Helmet } from 'react-helmet'
-import DashHeader from '../assets/components/dashboard-components/DashHeader'
-import DashMenu from '../assets/components/dashboard-components/DashMenu'
+import DashboardLayout from '../assets/components/dashboard-components/DashboardLayout';
 import MySettingsMain from '../assets/components/dashboard-components/MySettingsMain'
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
@@ -25,18 +24,12 @@ function MySettings() {
     <Helmet>
         <title>Settings - Posh Choice Store</title>
     </Helmet>
-    <DashHeader />
-    <div className='flex flex-row justify-start gap-4'>
-      <div className='hidden lg:block w-[20%]'>
-        <DashMenu />
-      </div>
-      <div className='w-full lg:w-[80%]'>
+    <DashboardLayout title="Settings">
         <MySettingsMain />
         <ul>
         {user.name}
     </ul>
-      </div>
-    </div>
+    </DashboardLayout>
     </>
   )
 }

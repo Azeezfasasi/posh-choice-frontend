@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { API_BASE_URL } from '../../../config/api';
-import { Editor } from '@tinymce/tinymce-react';
-import { RICHT_TEXT_API } from '../../../config/richText';
+import RichTextEditor from '../RichTextEditor';
 
 function SendNewsletterMain() {
   const [subject, setSubject] = useState('');
@@ -51,8 +50,8 @@ function SendNewsletterMain() {
   };
 
   return (
-    <div style={{ maxWidth: 600, margin: '40px auto', background: '#fff', borderRadius: 8, boxShadow: '0 2px 12px #e0e0e0', padding: 32 }}>
-      <h2 style={{ marginBottom: 24 }} className='text-purple-500 font-bold'>Send Newsletter</h2>
+    <div style={{ maxWidth: 600, margin: '40px auto', background: '#fff', borderRadius: 8, boxShadow: '0 2px 12px #ece7e1', padding: 32 }}>
+      <h2 style={{ marginBottom: 24 }} className='text-plum-700 font-bold'>Send Newsletter</h2>
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: 18 }}>
           <label style={{ fontWeight: 500 }}>Subject<span style={{ color: 'red' }}>*</span></label>
@@ -67,23 +66,15 @@ function SendNewsletterMain() {
         </div>
         <div className="mb-4">
           <label className="font-semibold block mb-1">Content<span className="text-red-500">*</span></label>
-          <Editor
-            apiKey={RICHT_TEXT_API}
+          <RichTextEditor
             value={content}
-            init={{
-              height: 400,
-              menubar: false,
-              plugins: [
-                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview', 'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen', 'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
-              ],
-              toolbar:
-                'undo redo | blocks |' + 'bold italic forecolor | alignleft aligncenter alignright alignjustify |' + '| bullist numlist outdent indent | ' + 'removeformat | help',
-            }}
-            onEditorChange={setContent}
+            onChange={setContent}
+            placeholder="Write your newsletter…"
+            minHeight={360}
           />
         </div>
         <div style={{ marginBottom: 18 }}>
-          <label style={{ fontWeight: 500 }}>Recipients (optional) <span className='text-purple-500 text-[13px]'>Leave blank for all subscribers or Separated emails with comma</span></label>
+          <label style={{ fontWeight: 500 }}>Recipients (optional) <span className='text-plum-700 text-[13px]'>Leave blank for all subscribers or Separated emails with comma</span></label>
           <input
             type="text"
             value={recipients}
@@ -97,7 +88,7 @@ function SendNewsletterMain() {
         <button
           type="submit"
           style={{color: '#fff', padding: '12px 32px', border: 'none', borderRadius: 4, fontWeight: 600, fontSize: 16, cursor: sendNewsletterMutation.isPending ? 'not-allowed' : 'pointer' }}
-          className='bg-purple-500'
+          className='bg-plum-600'
           disabled={sendNewsletterMutation.isPending}
         >
           {sendNewsletterMutation.isPending ? 'Sending...' : 'Send Newsletter'}

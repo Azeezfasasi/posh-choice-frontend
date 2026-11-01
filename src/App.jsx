@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import { UserProvider } from './assets/context-api/user-context/UserProvider';
 import { QuoteProvider } from './assets/context-api/QuoteProvider';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import Home from "./Home";
 import AboutUs from './AboutUs';
 import OurServices from './OurServices';
@@ -53,8 +53,13 @@ import EditProductCategories from './app/EditProductCategories';
 import SendNewsletter from './app/SendNewsletter';
 import AllNewsletter from './app/AllNewsletter';
 import NewsletterSubscribers from './app/NewsletterSubscribers';
-import ProductsByCategory from './app/ProductsByCategory';
 import DeliveryLocation from './app/DeliveryLocation';
+
+// Old category pages now live in the shop's category filter; keep old links working
+function CategoryRedirect() {
+  const { slug } = useParams();
+  return <Navigate to={`/app/shop?category=${encodeURIComponent(slug)}`} replace />;
+}
 
 function App() {
   return (
@@ -80,7 +85,7 @@ function App() {
                   <Route path="/app/shop" element={<Shop />} />
                   <Route path="/app/cart" element={<Cart />} />
                   <Route path="/app/productdetails/slug/:slug" element={<ProductDetails />} />
-                  <Route path="/app/productsbycategory/slug/:slug" element={<ProductsByCategory />} />
+                  <Route path="/app/productsbycategory/slug/:slug" element={<CategoryRedirect />} />
                   <Route path="/app/blogdetails/:id" element={<BlogDetails />} />
                   <Route path="/app/trackorder" element={<TrackOrder />} />
                   <Route path="/app/checkout" element={<Checkout />} />
