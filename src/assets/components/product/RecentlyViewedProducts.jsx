@@ -1,5 +1,9 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import SectionHeader from '../home/SectionHeader';
+import ProductCard from './ProductCard';
+
+const arrowButton = 'w-10 h-10 inline-flex items-center justify-center rounded-full border border-line bg-white text-ink hover:bg-plum-50 hover:text-plum-700 hover:border-plum-200 transition';
 
 const RECENTLY_VIEWED_KEY = 'recentlyViewedProducts';
 
@@ -73,126 +77,36 @@ const RecentlyViewedProducts = () => {
   }, []);
 
   // Touch events for mobile
-  const onTouchStart = useCallback((e) => {
-    isDragging.current = true;
-    if (sliderRef.current) {
-      sliderRef.current.classList.add('dragging');
-      startX.current = e.touches[0].pageX - sliderRef.current.offsetLeft;
-      scrollLeft.current = sliderRef.current.scrollLeft;
-    }
-  }, []);
-
-  const onTouchEnd = useCallback(() => {
-    if (isDragging.current && sliderRef.current) {
-      isDragging.current = false;
-      sliderRef.current.classList.remove('dragging');
-    }
-  }, []);
-
-  const onTouchMove = useCallback((e) => {
-    if (!isDragging.current || !sliderRef.current) return;
-    const x = e.touches[0].pageX - sliderRef.current.offsetLeft;
-    const walk = (x - startX.current) * 1.5; // Increased sensitivity
-    sliderRef.current.scrollLeft = scrollLeft.current - walk;
-  }, []);
 
   if (!products.length) return null;
 
   return (
-    <div className="my-8 bg-white rounded-xl shadow-lg px-4 py-8 overflow-hidden relative">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
-        <h3 className="text-lg font-semibold text-purple-500 mb-2 sm:mb-0">
-          Recently Viewed Products
-        </h3>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handlePrev}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-purple-100 transition border border-purple-200 shadow"
-            aria-label="Previous"
-            type="button"
-          >
-            <svg
-              width="20"
-              height="20"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M15 19l-7-7 7-7"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+    <section className="bg-white border-t border-line">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-16">
+        <SectionHeader eyebrow="Pick up where you left off" title="Recently viewed">
+          <button onClick={handlePrev} className={arrowButton} aria-label="Previous" type="button">
+            <ChevronLeft className="w-5 h-5" />
           </button>
-          <button
-            onClick={handleNext}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-purple-100 transition border border-purple-200 shadow"
-            aria-label="Next"
-            type="button"
-          >
-            <svg
-              width="20"
-              height="20"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M9 5l7 7-7 7"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+          <button onClick={handleNext} className={arrowButton} aria-label="Next" type="button">
+            <ChevronRight className="w-5 h-5" />
           </button>
-        </div>
-      </div>
-      <div className="overflow-hidden w-full relative">
+        </SectionHeader>
         <div
           ref={sliderRef}
-          className="flex whitespace-nowrap overflow-x-hidden no-scrollbar cursor-grab select-none"
+          className="flex gap-3 md:gap-5 overflow-x-auto no-scrollbar cursor-grab select-none scroll-smooth"
           onMouseDown={onMouseDown}
           onMouseLeave={onMouseLeave}
           onMouseUp={onMouseUp}
           onMouseMove={onMouseMove}
-          onTouchStart={onTouchStart}
-          onTouchEnd={onTouchEnd}
-          onTouchMove={onTouchMove}
         >
           {products.map((product, idx) => (
-            <div
-              className="min-w-[50%] lg:min-w-[23%] max-w-[23%] mx-[1%] bg-gray-50 rounded-lg shadow-sm flex-shrink-0 flex flex-col items-center hover:shadow-md transition mb-2"
-              key={product._id || idx}
-            >
-              <Link
-                to={`/app/productdetails/slug/${product.slug || product._id}`}
-                className="flex flex-col items-center w-full h-full text-inherit no-underline"
-              >
-                <img
-                  src={
-                    product.thumbnail ||
-                    (product.images && product.images[0]?.url) ||
-                    'https://placehold.co/400x400/CCCCCC/000000?text=No+Image' // Updated placeholder URL
-                  }
-                  alt={product.name}
-                  className="w-full h-40 object-cover border-b border-gray-100"
-                />
-                <div className="py-3 px-2 text-center w-full">
-                  <div className="text-base font-medium text-gray-800 mb-1 truncate">
-                    {product.name}
-                  </div>
-                  <div className="text-purple-500 font-bold text-lg">
-                    ₦{product.salePrice || product.price}
-                  </div>
-                </div>
-              </Link>
+            <div className="w-[46%] sm:w-[31%] lg:w-[19%] shrink-0" key={product._id || idx}>
+              <ProductCard product={product} />
             </div>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

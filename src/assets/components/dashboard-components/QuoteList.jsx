@@ -4,8 +4,8 @@ import { FaEdit, FaTrash, FaCheck, FaTimes, FaEye, FaFilter, FaSearch, FaSave, F
 
 const statusOptions = [
   { value: 'Pending', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'In Review', color: 'bg-blue-100 text-blue-800' },
-  { value: 'Done', color: 'bg-indigo-100 text-indigo-800' },
+  { value: 'In Review', color: 'bg-plum-50 text-plum-800' },
+  { value: 'Done', color: 'bg-plum-50 text-plum-800' },
   { value: 'Completed', color: 'bg-green-100 text-green-800' },
   { value: 'Rejected', color: 'bg-red-100 text-red-800' }
 ];
@@ -125,14 +125,14 @@ const QuoteList = () => {
   // Helper to get status badge color
   const getStatusColor = (status) => {
     const statusObj = statusOptions.find(opt => opt.value === status);
-    return statusObj ? statusObj.color : 'bg-gray-100 text-gray-800';
+    return statusObj ? statusObj.color : 'bg-cream text-ink';
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white rounded-lg ring-1 ring-line p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Quote Requests</h2>
-        <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+        <h2 className="text-2xl font-bold text-ink">Quote Requests</h2>
+        <div className="bg-plum-50 text-plum-800 px-3 py-1 rounded-full text-sm font-medium">
           Total: {totalQuotes}
         </div>
       </div>
@@ -148,7 +148,7 @@ const QuoteList = () => {
           </div>
           <button 
             onClick={() => error ? null : setSuccess2('')} 
-            className="text-gray-500 hover:text-gray-700"
+            className="text-ink-soft hover:text-ink"
           >
             <FaTimesCircle />
           </button>
@@ -160,25 +160,25 @@ const QuoteList = () => {
         <div className="flex flex-col md:flex-row items-center gap-2">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <FaSearch className="text-gray-400" />
+              <FaSearch className="text-ink-soft/70" />
             </div>
             <input 
               type="text" 
               placeholder="Search quotes..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="pl-10 pr-3 py-2 border border-line rounded-md focus:ring-plum-200 focus:border-plum-400"
             />
           </div>
           
           <div className="relative">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <FaFilter className="text-gray-400" />
+              <FaFilter className="text-ink-soft/70" />
             </div>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="pl-10 pr-3 py-2 border border-line rounded-md focus:ring-plum-200 focus:border-plum-400"
             >
               <option value="">All Statuses</option>
               {statusOptions.map(option => (
@@ -188,10 +188,10 @@ const QuoteList = () => {
           </div>
         </div>
         
-        <div className="text-sm text-gray-600 flex items-center">
+        <div className="text-sm text-ink-soft flex items-center">
           {loading ? (
             <div className="flex items-center">
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-plum-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -207,11 +207,11 @@ const QuoteList = () => {
 
       {/* Quotes Table */}
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-line">
+          <thead className="bg-cream">
             <tr>
               <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider cursor-pointer"
                 onClick={() => handleSort('name')}
               >
                 <div className="flex items-center">
@@ -222,7 +222,7 @@ const QuoteList = () => {
                 </div>
               </th>
               <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider cursor-pointer"
                 onClick={() => handleSort('email')}
               >
                 <div className="flex items-center">
@@ -233,7 +233,7 @@ const QuoteList = () => {
                 </div>
               </th>
               <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider cursor-pointer"
                 onClick={() => handleSort('phone')}
               >
                 <div className="flex items-center">
@@ -244,7 +244,7 @@ const QuoteList = () => {
                 </div>
               </th>
               <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider cursor-pointer"
                 onClick={() => handleSort('service')}
               >
                 <div className="flex items-center">
@@ -254,11 +254,11 @@ const QuoteList = () => {
                   )}
                 </div>
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider">
                 Message
               </th>
               <th 
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                className="px-6 py-3 text-left text-xs font-medium text-ink-soft uppercase tracking-wider cursor-pointer"
                 onClick={() => handleSort('status')}
               >
                 <div className="flex items-center">
@@ -268,21 +268,21 @@ const QuoteList = () => {
                   )}
                 </div>
               </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-center text-xs font-medium text-ink-soft uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-line">
             {paginatedQuotes.length === 0 && !loading ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={6} className="px-6 py-8 text-center text-ink-soft">
                   No quote requests found.
                 </td>
               </tr>
             ) : (
               paginatedQuotes.map((quote) => (
-                <tr key={quote._id} className="hover:bg-gray-50">
+                <tr key={quote._id} className="hover:bg-cream">
                   <td className="px-6 py-4 whitespace-nowrap">
                     {editId === quote._id ? (
                       <input
@@ -292,7 +292,7 @@ const QuoteList = () => {
                         className="border rounded px-3 py-1 w-full"
                       />
                     ) : (
-                      <div className="text-sm font-medium text-gray-900">{quote.name}</div>
+                      <div className="text-sm font-medium text-ink">{quote.name}</div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -304,7 +304,7 @@ const QuoteList = () => {
                         className="border rounded px-3 py-1 w-full"
                       />
                     ) : (
-                      <div className="text-sm text-gray-600">{quote.email}</div>
+                      <div className="text-sm text-ink-soft">{quote.email}</div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -316,7 +316,7 @@ const QuoteList = () => {
                         className="border rounded px-3 py-1 w-full"
                       />
                     ) : (
-                      <div className="text-sm text-gray-600">{quote.phone}</div>
+                      <div className="text-sm text-ink-soft">{quote.phone}</div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -328,7 +328,7 @@ const QuoteList = () => {
                         className="border rounded px-3 py-1 w-full"
                       />
                     ) : (
-                      <div className="text-sm text-gray-900">{quote.service}</div>
+                      <div className="text-sm text-ink">{quote.service}</div>
                     )}
                   </td>
                   <td className="px-6 py-4">
@@ -341,7 +341,7 @@ const QuoteList = () => {
                         rows="2"
                       />
                     ) : (
-                      <div className="text-sm text-gray-600 truncate max-w-xs">
+                      <div className="text-sm text-ink-soft truncate max-w-xs">
                         {quote.message.length > 50 
                           ? `${quote.message.substring(0, 50)}...` 
                           : quote.message
@@ -365,13 +365,13 @@ const QuoteList = () => {
                       <select
                         value={quote.status}
                         onChange={(e) => handleStatusChange(quote._id, e.target.value)}
-                        className={`${getStatusColor(quote.status)} border-0 rounded-full px-3 py-1 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer`}
+                        className={`${getStatusColor(quote.status)} border-0 rounded-full px-3 py-1 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-plum-200 cursor-pointer`}
                       >
                         {statusOptions.map((status) => (
                           <option 
                             key={status.value} 
                             value={status.value}
-                            className="bg-white text-gray-800"
+                            className="bg-white text-ink"
                           >
                             {status.value}
                           </option>
@@ -392,7 +392,7 @@ const QuoteList = () => {
                           </button>
                           <button
                             onClick={() => setEditId(null)}
-                            className="text-gray-600 hover:text-gray-900 focus:outline-none cursor-pointer"
+                            className="text-ink-soft hover:text-ink focus:outline-none cursor-pointer"
                             title="Cancel"
                           >
                             <FaTimesCircle size={18} />
@@ -402,14 +402,14 @@ const QuoteList = () => {
                         <>
                           <button
                             onClick={() => setViewQuote(quote)}
-                            className="text-blue-600 hover:text-blue-900 focus:outline-none cursor-pointer"
+                            className="text-plum-700 hover:text-plum-900 focus:outline-none cursor-pointer"
                             title="View Details"
                           >
                             <FaEye size={18} />
                           </button>
                           <button
                             onClick={() => handleEdit(quote)}
-                            className="text-indigo-600 hover:text-indigo-900 focus:outline-none cursor-pointer"
+                            className="text-plum-700 hover:text-plum-900 focus:outline-none cursor-pointer"
                             title="Edit"
                           >
                             <FaEdit size={18} />
@@ -435,7 +435,7 @@ const QuoteList = () => {
       {/* Pagination Controls */}
       {totalPages > 1 && (
         <div className="flex justify-between items-center mt-6">
-          <div className="text-sm text-gray-700">
+          <div className="text-sm text-ink">
             Showing <span className="font-medium">{(page - 1) * PAGE_SIZE + 1}</span> to{' '}
             <span className="font-medium">
               {Math.min(page * PAGE_SIZE, totalQuotes)}
@@ -448,8 +448,8 @@ const QuoteList = () => {
               disabled={page === 1}
               className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                 page === 1
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  ? 'bg-cream text-ink-soft/70 cursor-not-allowed'
+                  : 'bg-white border border-line text-ink hover:bg-cream'
               }`}
             >
               Previous
@@ -473,8 +473,8 @@ const QuoteList = () => {
                   onClick={() => setPage(pageNum)}
                   className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                     page === pageNum
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                      ? 'bg-plum-600 text-white'
+                      : 'bg-white border border-line text-ink hover:bg-cream'
                   }`}
                 >
                   {pageNum}
@@ -486,8 +486,8 @@ const QuoteList = () => {
               disabled={page === totalPages}
               className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                 page === totalPages
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  ? 'bg-cream text-ink-soft/70 cursor-not-allowed'
+                  : 'bg-white border border-line text-ink hover:bg-cream'
               }`}
             >
               Next
@@ -499,12 +499,12 @@ const QuoteList = () => {
       {/* View Quote Modal */}
       {viewQuote && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg ring-1 ring-line max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-800">Quote Details</h3>
+              <h3 className="text-xl font-bold text-ink">Quote Details</h3>
               <button 
                 onClick={() => setViewQuote(null)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-ink-soft hover:text-ink"
               >
                 <FaTimes size={20} />
               </button>
@@ -512,31 +512,31 @@ const QuoteList = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500">Name</p>
+                  <p className="text-sm text-ink-soft">Name</p>
                   <p className="font-medium">{viewQuote.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Email</p>
+                  <p className="text-sm text-ink-soft">Email</p>
                   <p className="font-medium">{viewQuote.email}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Service</p>
+                  <p className="text-sm text-ink-soft">Service</p>
                   <p className="font-medium">{viewQuote.service}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Status</p>
+                  <p className="text-sm text-ink-soft">Status</p>
                   <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(viewQuote.status)}`}>
                     {viewQuote.status}
                   </span>
                 </div>
                 <div className="col-span-2">
-                  <p className="text-sm text-gray-500">Date Submitted</p>
+                  <p className="text-sm text-ink-soft">Date Submitted</p>
                   <p className="font-medium">{new Date(viewQuote.createdAt).toLocaleString()}</p>
                 </div>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Message</p>
-                <div className="mt-1 p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm text-ink-soft">Message</p>
+                <div className="mt-1 p-3 bg-cream rounded-lg">
                   <p className="whitespace-pre-line">{viewQuote.message}</p>
                 </div>
               </div>
@@ -546,13 +546,13 @@ const QuoteList = () => {
                     handleEdit(viewQuote);
                     setViewQuote(null);
                   }}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  className="px-4 py-2 bg-plum-600 text-white rounded-md hover:bg-plum-700"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => setViewQuote(null)}
-                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                  className="px-4 py-2 bg-line text-ink rounded-md hover:bg-plum-50"
                 >
                   Close
                 </button>
@@ -565,11 +565,11 @@ const QuoteList = () => {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+          <div className="bg-white rounded-lg ring-1 ring-line max-w-md w-full p-6">
             <div className="text-center">
               <FaTrash className="mx-auto text-red-500 text-4xl mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Delete Quote Request</h3>
-              <p className="text-sm text-gray-500 mb-6">
+              <h3 className="text-lg font-medium text-ink mb-2">Delete Quote Request</h3>
+              <p className="text-sm text-ink-soft mb-6">
                 Are you sure you want to delete the quote request from <span className="font-medium">{quoteToDelete.name}</span>? 
                 This action cannot be undone.
               </p>
@@ -577,7 +577,7 @@ const QuoteList = () => {
             <div className="flex justify-center space-x-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                className="px-4 py-2 bg-line text-ink rounded-md hover:bg-plum-50"
               >
                 Cancel
               </button>

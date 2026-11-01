@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, ButtonToolbar, Placeholder } from 'rsuite';
-import SubscribeToNewsletter from './SubscribeToNewsletter';
+import { Modal } from 'rsuite';
 import SubscribeToNewsletterPopUp from './SubscriveToNewsletterPopUp';
-import news1 from '../images/news1.png'
 
 export const SubscribePopUp = () => {
   const [open, setOpen] = useState(false);
@@ -21,26 +19,23 @@ export const SubscribePopUp = () => {
 
   const handleClose = () => setOpen(false);
   return (
-    <>
-      <Modal open={open} onClose={handleClose}>
-        <Modal.Header>
-        </Modal.Header>
-        <Modal.Body>
-            <div className='flex flex-col items-center'>
-                <img src={news1} alt="Newsletter image" className='w-[120px] h-[120px]' />
-                <div className='text-center font-semibold text-[26px] mb-3'>Subscribe to newsletter</div>
-                <div className='text-center '>Enter your email to get the update on Posh Choice Store's hottest deals, exclusive offers, early access to sales and more.<br />Don't miss out</div>
-                <div className='w-full'>
-                    <SubscribeToNewsletterPopUp />
-                </div>
-            </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={handleClose}>
-            <div className='bg-purple-700 text-white py-2 px-6 rounded-md'>Close</div>
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </>
+    <Modal open={open} onClose={handleClose} size="sm">
+      <Modal.Header />
+      <Modal.Body className="!overflow-visible">
+        <div className="flex flex-col items-center text-center px-2 sm:px-6 pb-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gold mb-3">Posh Choice newsletter</p>
+          <h2 className="font-display text-2xl sm:text-3xl font-semibold text-ink leading-tight mb-3">
+            Get first access to new arrivals and offers
+          </h2>
+          <p className="text-sm text-ink-soft mb-6 max-w-md">
+            Join our list for exclusive deals, early access to sales and gift ideas. Unsubscribe any time.
+          </p>
+          <SubscribeToNewsletterPopUp />
+          <button type="button" onClick={handleClose} className="mt-4 text-sm text-ink-soft hover:text-ink underline-offset-4 hover:underline">
+            No thanks
+          </button>
+        </div>
+      </Modal.Body>
+    </Modal>
   );
 };

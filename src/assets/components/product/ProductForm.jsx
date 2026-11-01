@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { API_ORIGIN } from '../../../config/api';
-import { Editor } from '@tinymce/tinymce-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useProduct } from '../../context-api/product-context/UseProduct';
 import { FaImage, FaUpload, FaTimes, FaSave, FaArrowLeft } from 'react-icons/fa';
 import { v4 as uuidv4 } from 'uuid';
-import { RICHT_TEXT_API } from '../../../config/richText';
+import RichTextEditor from '../RichTextEditor';
 
 const ProductForm = () => {
   const { id } = useParams();
@@ -258,21 +257,21 @@ const ProductForm = () => {
   }
 };
 
-  const editorRef = useRef(null);
+  // Functional update so other fields edited meanwhile are never overwritten
   const handleEditorChange = (content) => {
-    setFormData({ ...formData, description: content });
+    setFormData(prev => ({ ...prev, description: content }));
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-25">
+    <div className="bg-white rounded-lg ring-1 ring-line p-6 mb-25">
       <div className="flex items-center mb-6">
         <button 
           onClick={() => navigate('/app/products')}
-          className="text-purple-500 hover:text-purple-600 mr-4 cursor-pointer"
+          className="text-plum-700 hover:text-plum-800 mr-4 cursor-pointer"
         >
           <FaArrowLeft size={20} />
         </button>
-        <h2 className="text-2xl font-bold text-gray-800">
+        <h2 className="text-2xl font-bold text-ink">
           {isEditMode ? 'Edit Product' : 'Add New Product'}
         </h2>
       </div>
@@ -305,13 +304,13 @@ const ProductForm = () => {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
-        <div className="bg-gray-50 p-4 rounded-md">
-          <h3 className="text-lg font-medium text-gray-800">Basic Information</h3>
+        <div className="bg-cream p-4 rounded-md">
+          <h3 className="text-lg font-medium text-ink">Basic Information</h3>
           <p className='italic mb-4'>Please note that all fields marked with asterisk (<span className='text-red-700 text-[20px]'>*</span>) are required.</p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="name" className="block text-sm font-medium text-ink mb-1">
                 Product Name<span className='text-red-700'>*</span>
               </label>
               <input
@@ -320,7 +319,7 @@ const ProductForm = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`w-full border ${validationErrors.name ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                className={`w-full border ${validationErrors.name ? 'border-red-500' : 'border-line'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200`}
               />
               {validationErrors.name && (
                 <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>
@@ -328,8 +327,8 @@ const ProductForm = () => {
             </div>
             
             <div>
-              <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">
-                Brand <span className='text-purple-500'>(Optional)</span>
+              <label htmlFor="brand" className="block text-sm font-medium text-ink mb-1">
+                Brand <span className='text-plum-700'>(Optional)</span>
               </label>
               <input
                 type="text"
@@ -337,12 +336,12 @@ const ProductForm = () => {
                 name="brand"
                 value={formData.brand}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
               />
             </div>
             
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="category" className="block text-sm font-medium text-ink mb-1">
                 Category<span className='text-red-700'>*</span>
               </label>
               <select
@@ -350,7 +349,7 @@ const ProductForm = () => {
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className={`w-full border ${validationErrors.category ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                className={`w-full border ${validationErrors.category ? 'border-red-500' : 'border-line'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200`}
               >
                 <option value="">Select a category</option>
                 {categories.map(category => (
@@ -365,8 +364,8 @@ const ProductForm = () => {
             </div>
             
             <div>
-              <label htmlFor="sku" className="block text-sm font-medium text-gray-700 mb-1">
-                SKU<span className='text-red-700'>* <span className='text-purple-500'>(This will be generated automatically)</span></span>
+              <label htmlFor="sku" className="block text-sm font-medium text-ink mb-1">
+                SKU<span className='text-red-700'>* <span className='text-plum-700'>(This will be generated automatically)</span></span>
               </label>
               <input
                 type="text"
@@ -375,30 +374,21 @@ const ProductForm = () => {
                 readOnly
                 value={formData.sku}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
               />
             </div>
           </div>
           
           <div className="mt-4">
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="description" className="block text-sm font-medium text-ink mb-1">
               Product Description<span className='text-red-700'>*</span>
             </label>
-            <Editor
-              apiKey={RICHT_TEXT_API}
-              onInit={(evt, editor) => (editorRef.current = editor)}
-              value={formData.richDescription || formData.description}
-              init={{
-                height: 300,
-                menubar: false,
-                plugins: [
-                  'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                  'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                  'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
-                ],
-                toolbar: 'undo redo | blocks |' + 'bold italic forecolor | alignleft aligncenter alignright alignjustify |' + '| bullist numlist outdent indent | ' + 'removeformat | help',
-              }}
-              onEditorChange={handleEditorChange}
+            <RichTextEditor
+              id="description"
+              value={formData.description || formData.richDescription || ''}
+              onChange={handleEditorChange}
+              placeholder="Describe the product: materials, size, what's in the box, care instructions…"
+              invalid={Boolean(validationErrors.description)}
             />
             {validationErrors.description && (
               <p className="text-red-500 text-xs mt-1">{validationErrors.description}</p>
@@ -407,23 +397,23 @@ const ProductForm = () => {
         </div>
 
         {/* Pricing & Inventory */}
-        <div className="bg-gray-50 p-4 rounded-md">
-          <h3 className="text-lg font-medium text-gray-800 mb-4">Pricing & Inventory</h3>
+        <div className="bg-cream p-4 rounded-md">
+          <h3 className="text-lg font-medium text-ink mb-4">Pricing & Inventory</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="price" className="block text-sm font-medium text-ink mb-1">
                 Price<span className='text-red-700'>*</span>
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">₦</span>
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-ink-soft">₦</span>
                 <input
                   type="text"
                   id="price"
                   name="price"
                   value={formData.price}
                   onChange={handleChange}
-                  className={`w-full pl-8 border ${validationErrors.price ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                  className={`w-full pl-8 border ${validationErrors.price ? 'border-red-500' : 'border-line'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200`}
                 />
               </div>
               {validationErrors.price && (
@@ -432,18 +422,18 @@ const ProductForm = () => {
             </div>
 
             <div>
-              <label htmlFor="originalPrice" className="block text-sm font-medium text-gray-700 mb-1">
-                Discounted Price <span className='text-[12px] text-purple-600 font-semibold'>(Optional - Must be less than original price)</span>
+              <label htmlFor="originalPrice" className="block text-sm font-medium text-ink mb-1">
+                Discounted Price <span className='text-[12px] text-plum-700 font-semibold'>(Optional - Must be less than original price)</span>
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">₦</span>
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-ink-soft">₦</span>
                 <input
                   type="text"
                   id="originalPrice"
                   name="originalPrice"
                   value={formData.originalPrice}
                   onChange={handleChange}
-                  className={`w-full pl-8 border ${validationErrors.originalPrice ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                  className={`w-full pl-8 border ${validationErrors.originalPrice ? 'border-red-500' : 'border-line'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200`}
                 />
               </div>
               {validationErrors.originalPrice && (
@@ -452,7 +442,7 @@ const ProductForm = () => {
             </div>
 
             <div>
-              <label htmlFor="stockQuantity" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="stockQuantity" className="block text-sm font-medium text-ink mb-1">
                 Stock Quantity<span className='text-red-700'>*</span>
               </label>
               <input
@@ -461,7 +451,7 @@ const ProductForm = () => {
                 name="stockQuantity"
                 value={formData.stockQuantity}
                 onChange={handleChange}
-                className={`w-full border ${validationErrors.stockQuantity ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                className={`w-full border ${validationErrors.stockQuantity ? 'border-red-500' : 'border-line'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200`}
               />
               {validationErrors.stockQuantity && (
                 <p className="text-red-500 text-xs mt-1">{validationErrors.stockQuantity}</p>
@@ -477,16 +467,16 @@ const ProductForm = () => {
                 name="isOnSale"
                 checked={formData.isOnSale}
                 onChange={handleChange}
-                className="h-4 w-4 text-purple-500 focus:ring-purple-500 border-gray-300 rounded"
+                className="h-4 w-4 text-plum-700 focus:ring-plum-200 border-line rounded"
               />
-              <label htmlFor="isOnSale" className="ml-2 block text-sm text-gray-700">
+              <label htmlFor="isOnSale" className="ml-2 block text-sm text-ink">
                 On Sale
               </label>
             </div>
 
             {formData.isOnSale && (
               <div>
-                <label htmlFor="discountPercentage" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="discountPercentage" className="block text-sm font-medium text-ink mb-1">
                   Discount Percentage
                 </label>
                 <div className="relative">
@@ -496,9 +486,9 @@ const ProductForm = () => {
                     name="discountPercentage"
                     value={formData.discountPercentage}
                     onChange={handleChange}
-                    className={`w-full pr-8 border ${validationErrors.discountPercentage ? 'border-red-500' : 'border-gray-300'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                    className={`w-full pr-8 border ${validationErrors.discountPercentage ? 'border-red-500' : 'border-line'} rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200`}
                   />
-                  <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-purple-600">%</span>
+                  <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-plum-700">%</span>
                 </div>
                 {validationErrors.discountPercentage && (
                   <p className="text-red-500 text-xs mt-1">{validationErrors.discountPercentage}</p>
@@ -509,13 +499,13 @@ const ProductForm = () => {
         </div>
 
         {/* Attributes */}
-        <div className="bg-gray-50 p-4 rounded-md">
-          <h3 className="text-lg font-medium text-gray-800 mb-4">Attributes</h3>
+        <div className="bg-cream p-4 rounded-md">
+          <h3 className="text-lg font-medium text-ink mb-4">Attributes</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label htmlFor="colors" className="block text-sm font-medium text-gray-700 mb-1">
-                Colors <span className='text-[12px] text-purple-500 font-normal'>(Optional - Must be separated with comma)</span>
+              <label htmlFor="colors" className="block text-sm font-medium text-ink mb-1">
+                Colors <span className='text-[12px] text-plum-700 font-normal'>(Optional - Must be separated with comma)</span>
               </label>
               <input
                 type="text"
@@ -523,14 +513,14 @@ const ProductForm = () => {
                 name="colors"
                 value={formData.colors}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
                 placeholder="Red, Blue, Green"
               />
             </div>
 
             <div>
-              <label htmlFor="sizes" className="block text-sm font-medium text-gray-700 mb-1">
-                Sizes <span className='text-[12px] text-purple-500 font-normal'>(Optional - Must be separated with comma)</span>
+              <label htmlFor="sizes" className="block text-sm font-medium text-ink mb-1">
+                Sizes <span className='text-[12px] text-plum-700 font-normal'>(Optional - Must be separated with comma)</span>
               </label>
               <input
                 type="text"
@@ -538,14 +528,14 @@ const ProductForm = () => {
                 name="sizes"
                 value={formData.sizes}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
                 placeholder="S, M, L, XL"
               />
             </div>
 
             <div>
-              <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
-                Tags <span className='text-[12px] text-purple-500 font-normal'>(Optional - Must be separated with comma)</span>
+              <label htmlFor="tags" className="block text-sm font-medium text-ink mb-1">
+                Tags <span className='text-[12px] text-plum-700 font-normal'>(Optional - Must be separated with comma)</span>
               </label>
               <input
                 type="text"
@@ -553,7 +543,7 @@ const ProductForm = () => {
                 name="tags"
                 value={formData.tags}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
                 placeholder="new, summer, sale"
               />
             </div>
@@ -561,8 +551,8 @@ const ProductForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-4">
             <div>
-              <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-1">
-                Weight (kg) <span className='text-[12px] text-purple-500 font-normal'>(Optional)</span>
+              <label htmlFor="weight" className="block text-sm font-medium text-ink mb-1">
+                Weight (kg) <span className='text-[12px] text-plum-700 font-normal'>(Optional)</span>
               </label>
               <input
                 type="text"
@@ -570,13 +560,13 @@ const ProductForm = () => {
                 name="weight"
                 value={formData.weight}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
               />
             </div>
 
             <div>
-              <label htmlFor="dimensions.length" className="block text-sm font-medium text-gray-700 mb-1">
-                Length (cm) <span className='text-[12px] text-purple-500 font-normal'>(Optional)</span>
+              <label htmlFor="dimensions.length" className="block text-sm font-medium text-ink mb-1">
+                Length (cm) <span className='text-[12px] text-plum-700 font-normal'>(Optional)</span>
               </label>
               <input
                 type="text"
@@ -584,13 +574,13 @@ const ProductForm = () => {
                 name="dimensions.length"
                 value={formData.dimensions.length}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
               />
             </div>
 
             <div>
-              <label htmlFor="dimensions.width" className="block text-sm font-medium text-gray-700 mb-1">
-                Width (cm) <span className='text-[12px] text-purple-500 font-normal'>(Optional)</span>
+              <label htmlFor="dimensions.width" className="block text-sm font-medium text-ink mb-1">
+                Width (cm) <span className='text-[12px] text-plum-700 font-normal'>(Optional)</span>
               </label>
               <input
                 type="text"
@@ -598,13 +588,13 @@ const ProductForm = () => {
                 name="dimensions.width"
                 value={formData.dimensions.width}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
               />
             </div>
 
             <div>
-              <label htmlFor="dimensions.height" className="block text-sm font-medium text-gray-700 mb-1">
-                Height (cm) <span className='text-[12px] text-purple-500 font-normal'>(Optional)</span>
+              <label htmlFor="dimensions.height" className="block text-sm font-medium text-ink mb-1">
+                Height (cm) <span className='text-[12px] text-plum-700 font-normal'>(Optional)</span>
               </label>
               <input
                 type="text"
@@ -612,28 +602,28 @@ const ProductForm = () => {
                 name="dimensions.height"
                 value={formData.dimensions.height}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
               />
             </div>
           </div>
         </div>
 
         {/* Product Images */}
-        <div className="bg-gray-50 p-4 rounded-md">
-          <h3 className="text-lg font-medium text-gray-800 mb-4">Product Images</h3>
+        <div className="bg-cream p-4 rounded-md">
+          <h3 className="text-lg font-medium text-ink mb-4">Product Images</h3>
 
           {/* Image Upload */}
           <div className="mb-6">
-            <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-2">
-              Upload Images <span className='text-[12px} text-purple-500 font-semibold'>You can add up to 10 images</span>
+            <label htmlFor="images" className="block text-sm font-medium text-ink mb-2">
+              Upload Images <span className='text-[12px} text-plum-700 font-semibold'>You can add up to 10 images</span>
             </label>
-            <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center">
+            <div className="border-2 border-dashed border-line rounded-md p-6 text-center">
               <div className="flex justify-center">
-                <FaImage className="text-gray-400 text-4xl mb-3" />
+                <FaImage className="text-ink-soft/70 text-4xl mb-3" />
               </div>
-              <p className="text-gray-500 mb-2">Drag and drop images here, or click to select files</p>
-              <p className="text-xs text-gray-400 mb-4">PNG, JPG, GIF up to 5MB</p>
-              <p className="text-xs text-purple-500 mb-4">You can add up to 10 images</p>
+              <p className="text-ink-soft mb-2">Drag and drop images here, or click to select files</p>
+              <p className="text-xs text-ink-soft/70 mb-4">PNG, JPG, GIF up to 5MB</p>
+              <p className="text-xs text-plum-700 mb-4">You can add up to 10 images</p>
               <input
                 type="file"
                 id="images"
@@ -645,7 +635,7 @@ const ProductForm = () => {
               />
               <label
                 htmlFor="images"
-                className="inline-flex items-center px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 cursor-pointer"
+                className="inline-flex items-center px-4 py-2 bg-plum-600 text-white rounded-md hover:bg-plum-700 cursor-pointer"
               >
                 <FaUpload className="mr-2" />
                 Select Files
@@ -655,10 +645,10 @@ const ProductForm = () => {
 
           {/* Image Previews */}
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Existing Images</h4>
+            <h4 className="text-sm font-medium text-ink mb-2">Existing Images</h4>
 
             {images.length === 0 && imagePreviewUrls.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No images yet</p>
+              <p className="text-ink-soft text-center py-4">No images yet</p>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {/* Existing images from server */}
@@ -703,12 +693,12 @@ const ProductForm = () => {
         </div>
 
         {/* Publication Settings */}
-        <div className="bg-gray-50 p-4 rounded-md">
-          <h3 className="text-lg font-medium text-gray-800 mb-4">Publication Settings</h3>
+        <div className="bg-cream p-4 rounded-md">
+          <h3 className="text-lg font-medium text-ink mb-4">Publication Settings</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="status" className="block text-sm font-medium text-ink mb-1">
                 Status
               </label>
               <select
@@ -716,7 +706,7 @@ const ProductForm = () => {
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-line rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-plum-200"
               >
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
@@ -731,10 +721,10 @@ const ProductForm = () => {
                 name="isFeatured"
                 checked={formData.isFeatured}
                 onChange={handleChange}
-                className="h-4 w-4 text-purple-500 focus:ring-purple-500 border-gray-300 rounded"
+                className="h-4 w-4 text-plum-700 focus:ring-plum-200 border-line rounded"
               />
-              <label htmlFor="isFeatured" className="ml-2 block text-sm text-gray-700">
-                Featured Product <span className='text-[12px] font-normal text-purple-500'>(If checked, this will make this product to show on homepage under Featured Products)</span>
+              <label htmlFor="isFeatured" className="ml-2 block text-sm text-ink">
+                Featured Product <span className='text-[12px] font-normal text-plum-700'>(If checked, this will make this product to show on homepage under Featured Products)</span>
               </label>
             </div>
           </div>
@@ -771,14 +761,14 @@ const ProductForm = () => {
           <button
             type="button"
             onClick={() => navigate('/app/products')}
-            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
+            className="px-4 py-2 border border-line rounded-md text-sm font-medium text-ink hover:bg-cream cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="submit"
             // disabled={loading}
-            className="px-4 py-2 bg-purple-500 border border-transparent rounded-md text-sm font-medium text-white hover:bg-purple-600 flex items-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="px-4 py-2 bg-plum-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-plum-700 flex items-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {loading ? (
               <>

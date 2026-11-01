@@ -6,33 +6,35 @@ import RecentProduct from './assets/components/product/RecentProduct'
 import TopHeader from "./assets/components/TopHeader"
 import ShopByCategories from './assets/components/product/ShopByCategories'
 import ProductHero from './assets/components/ProductHero'
-import PlasticProducts from './assets/components/product/PlasticProducts'
-import KitchenEquipmentProducts from './assets/components/product/KitchenEquipmentProducts'
-import HouseholdPlasticsProducts from './assets/components/product/HouseholdPlasticsProducts'
-import KitchenAppliancesProducts from './assets/components/product/KitchenAppliancesProducts'
+import CategoryProductRow from './assets/components/product/CategoryProductRow'
 import RecentlyViewedProducts from './assets/components/product/RecentlyViewedProducts'
+import TrustStrip from './assets/components/home/TrustStrip'
+import QuoteBanner from './assets/components/home/QuoteBanner'
 import { SubscribePopUp } from './assets/components/SubscribePopUp'
 import WhatsAppChat from './assets/components/WhatsAppChat'
-import GiftItemsProducts from './assets/components/product/HouseholdPlasticsProducts'
 
 function Home() {
   return (
     <>
     <Helmet>
-      <title>Home - Posh Choice Store</title>
-      <meta name="description" content="Posh Choice Store is a trusted eCommerce destination for high-quality souvenirs materials and household essentials. We offer a wide range of products including home decor, kitchenware, and personal care items to meet your everyday needs." />
+      <title>Posh Choice Store | Household Essentials, Kitchenware &amp; Gift Items</title>
+      <meta name="description" content="Posh Choice Store is a trusted online store for quality household essentials, kitchenware, gift items and souvenirs, with bulk and custom orders for businesses and events." />
     </Helmet>
     <SubscribePopUp />
     <TopHeader />
     <MainHeader />
-    <ProductHero />
-    <ShopByCategories />
-    <FeaturedProduct />
-    <RecentProduct />
-    <KitchenEquipmentProducts />
-    <GiftItemsProducts />
-    <KitchenAppliancesProducts />
-    <RecentlyViewedProducts />
+    <main>
+      <ProductHero />
+      <TrustStrip />
+      <ShopByCategories />
+      <FeaturedProduct />
+      <RecentProduct />
+      <QuoteBanner />
+      <CategoryProductRow slug="kitchen-equipments" eyebrow="For the kitchen" title="Kitchen equipment" tone="cream" />
+      <CategoryProductRow slug="gift-items" eyebrow="Gifts & souvenirs" title="Gift items" />
+      <CategoryProductRow slug="kitchen-appliances" eyebrow="Appliances" title="Kitchen appliances" tone="cream" />
+      <RecentlyViewedProducts />
+    </main>
     <Footer />
     <WhatsAppChat />
     </>

@@ -1,5 +1,61 @@
 @import "tailwindcss";
 
+/* ---- Posh Choice brand tokens ----
+   Use as Tailwind utilities: bg-plum-600, text-ink, bg-cream, text-gold, font-display, etc. */
+@theme {
+  /* Primary: refined plum */
+  --color-plum-50: #f6f1fa;
+  --color-plum-100: #ebddf4;
+  --color-plum-200: #d6bce8;
+  --color-plum-300: #b993d6;
+  --color-plum-400: #9667be;
+  --color-plum-500: #7a45a3;
+  --color-plum-600: #5b2a86;
+  --color-plum-700: #4a2270;
+  --color-plum-800: #3a1b58;
+  --color-plum-900: #2a1440;
+  --color-plum-950: #1a0c29;
+
+  /* Text and dark surfaces */
+  --color-ink: #0f1b3d;
+  --color-ink-soft: #4a5470;
+
+  /* Accent */
+  --color-gold: #c9a24a;
+  --color-gold-soft: #f4ead3;
+
+  /* Surfaces */
+  --color-cream: #faf8f5;
+  --color-line: #ece7e1;
+
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+}
+
+@layer base {
+  body {
+    @apply font-sans text-ink antialiased;
+  }
+
+  /* Dashboard content defaults (utilities on a component still win) */
+  .dash-content :where(h1, h2) {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+  .dash-content :where(input:not([type=checkbox]):not([type=radio]):not([type=file]), select, textarea) {
+    border-color: var(--color-line);
+    border-radius: 0.75rem;
+  }
+  .dash-content :where(input, select, textarea):focus-visible {
+    outline: none;
+    border-color: var(--color-plum-400);
+    box-shadow: 0 0 0 4px var(--color-plum-100);
+  }
+  .dash-content :where(th) {
+    color: var(--color-ink-soft);
+  }
+}
+
 /* In your CSS file (e.g., index.css or a dedicated CSS module) */
 .no-scrollbar {
     -ms-overflow-style: none;
@@ -11,3 +67,49 @@
 .no-scrollbar::-webkit-scrollbar {
     display: none;
     /* Chrome, Safari, Opera*/ }
+
+/* Rich text (TipTap editor + rendered product descriptions, blog posts) */
+.rich-text {
+  color: var(--color-ink);
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+.rich-text > * + * { margin-top: 0.85em; }
+.rich-text h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; line-height: 1.25; margin-top: 1.4em; }
+.rich-text h3 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 600; line-height: 1.3; margin-top: 1.2em; }
+.rich-text :is(h2, h3):first-child { margin-top: 0; }
+.rich-text ul { list-style: disc; padding-left: 1.4em; }
+.rich-text ol { list-style: decimal; padding-left: 1.4em; }
+.rich-text li + li { margin-top: 0.25em; }
+.rich-text li > p { margin: 0; }
+.rich-text a { color: var(--color-plum-700); text-decoration: underline; text-underline-offset: 2px; }
+.rich-text strong { font-weight: 700; }
+.rich-text blockquote { border-left: 3px solid var(--color-gold); padding-left: 1em; color: var(--color-ink-soft); font-style: italic; }
+.rich-text hr { border: 0; border-top: 1px solid var(--color-line); margin: 1.5em 0; }
+.rich-text code { background: var(--color-cream); border-radius: 0.375rem; padding: 0.1em 0.35em; font-size: 0.9em; }
+.rich-text p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: color-mix(in oklab, var(--color-ink-soft) 70%, transparent);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Subtle scrollbar for dark panels (dashboard sidebar) */
+.dark-scroll { scrollbar-width: thin; scrollbar-color: rgb(255 255 255 / 0.18) transparent; }
+.dark-scroll::-webkit-scrollbar { width: 6px; }
+.dark-scroll::-webkit-scrollbar-track { background: transparent; }
+.dark-scroll::-webkit-scrollbar-thumb { background: rgb(255 255 255 / 0.18); border-radius: 9999px; }
+
+@keyframes hero-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-hero-fade {
+  animation: hero-fade 0.6s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-fade { animation: none; }
+}

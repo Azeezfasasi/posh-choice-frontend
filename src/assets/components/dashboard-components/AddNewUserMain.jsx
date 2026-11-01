@@ -2,8 +2,6 @@ import React, { useState, useContext } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../../context-api/user-context/UserContext';
-import DashHeader from './DashHeader';
-import DashMenu from './DashMenu';
 import { FaUserPlus, FaLock, FaEnvelope, FaUser, FaUserTag, FaCheck, FaTimes } from 'react-icons/fa';
 
 function AddNewUserMain() {
@@ -109,10 +107,10 @@ function AddNewUserMain() {
 
   return (
     <>
-    <div className="bg-white rounded-lg shadow-md p-6 max-w-3xl mx-auto">
+    <div className="bg-white rounded-lg ring-1 ring-line p-6 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 flex items-center">
-          <FaUserPlus className="mr-2 text-purple-500" /> Add New User
+        <h1 className="text-2xl font-bold text-ink flex items-center">
+          <FaUserPlus className="mr-2 text-plum-700" /> Add New User
         </h1>
       </div>
       
@@ -134,12 +132,12 @@ function AddNewUserMain() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Name field */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="name" className="block text-sm font-medium text-ink mb-1">
               Full Name
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaUser className="text-gray-400" />
+                <FaUser className="text-ink-soft/70" />
               </div>
               <input
                 type="text"
@@ -147,7 +145,7 @@ function AddNewUserMain() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-3 py-2 border ${formErrors.name ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                className={`w-full pl-10 pr-3 py-2 border ${formErrors.name ? 'border-red-500' : 'border-line'} rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
                 placeholder="Enter full name"
               />
             </div>
@@ -158,12 +156,12 @@ function AddNewUserMain() {
           
           {/* Email field */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-ink mb-1">
               Email Address
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaEnvelope className="text-gray-400" />
+                <FaEnvelope className="text-ink-soft/70" />
               </div>
               <input
                 type="email"
@@ -171,7 +169,7 @@ function AddNewUserMain() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-3 py-2 border ${formErrors.email ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                className={`w-full pl-10 pr-3 py-2 border ${formErrors.email ? 'border-red-500' : 'border-line'} rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
                 placeholder="Enter email address"
               />
             </div>
@@ -182,12 +180,12 @@ function AddNewUserMain() {
           
           {/* Password field */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-ink mb-1">
               Password
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaLock className="text-gray-400" />
+                <FaLock className="text-ink-soft/70" />
               </div>
               <input
                 type={showPassword ? "text" : "password"}
@@ -195,12 +193,12 @@ function AddNewUserMain() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-10 py-2 border ${formErrors.password ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                className={`w-full pl-10 pr-10 py-2 border ${formErrors.password ? 'border-red-500' : 'border-line'} rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
                 placeholder="Enter password"
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-ink-soft hover:text-ink"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? 'Hide' : 'Show'}
@@ -213,12 +211,12 @@ function AddNewUserMain() {
           
           {/* Confirm Password field */}
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-ink mb-1">
               Confirm Password
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaLock className="text-gray-400" />
+                <FaLock className="text-ink-soft/70" />
               </div>
               <input
                 type={showConfirmPassword ? "text" : "password"}
@@ -226,12 +224,12 @@ function AddNewUserMain() {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-10 py-2 border ${formErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                className={`w-full pl-10 pr-10 py-2 border ${formErrors.confirmPassword ? 'border-red-500' : 'border-line'} rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200`}
                 placeholder="Confirm password"
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-ink-soft hover:text-ink"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
                 {showConfirmPassword ? 'Hide' : 'Show'}
@@ -244,19 +242,19 @@ function AddNewUserMain() {
           
           {/* Role selection */}
           <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="role" className="block text-sm font-medium text-ink mb-1">
               User Role
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <FaUserTag className="text-gray-400" />
+                <FaUserTag className="text-ink-soft/70" />
               </div>
               <select
                 id="role"
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 appearance-none bg-white"
+                className="w-full pl-10 pr-3 py-2 border border-line rounded-md focus:outline-none focus:ring-2 focus:ring-plum-200 appearance-none bg-white"
               >
                 <option value="user">User</option>
                 <option value="customer">Customer</option>
@@ -265,7 +263,7 @@ function AddNewUserMain() {
                 {isSuperAdmin && <option value="super admin">Super Admin</option>}
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="h-5 w-5 text-ink-soft/70" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -280,27 +278,27 @@ function AddNewUserMain() {
               name="isActive"
               checked={formData.isActive}
               onChange={handleChange}
-              className="h-4 w-4 text-purple-500 border-gray-300 rounded focus:ring-purple-500"
+              className="h-4 w-4 text-plum-700 border-line rounded focus:ring-plum-200"
             />
-            <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
+            <label htmlFor="isActive" className="ml-2 block text-sm text-ink">
               Active Account
             </label>
           </div>
         </div>
         
-        <div className="pt-4 border-t border-gray-200">
+        <div className="pt-4 border-t border-line">
           <div className="flex justify-end space-x-3">
             <button
               type="button"
               onClick={() => navigate('/app/allusers')}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
+              className="px-4 py-2 border border-line rounded-md text-sm font-medium text-ink hover:bg-cream focus:outline-none focus:ring-2 focus:ring-plum-200 cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-purple-500 border border-transparent rounded-md text-sm font-medium text-white hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center cursor-pointer"
+              className="px-4 py-2 bg-plum-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-plum-700 focus:outline-none focus:ring-2 focus:ring-plum-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center cursor-pointer"
             >
               {loading ? (
                 <>
@@ -319,8 +317,8 @@ function AddNewUserMain() {
       </form>
       
       <div className="mt-8">
-        <h3 className="text-sm font-medium text-gray-500 mb-2">Password Requirements:</h3>
-        <ul className="list-disc pl-5 text-xs text-gray-500 space-y-1">
+        <h3 className="text-sm font-medium text-ink-soft mb-2">Password Requirements:</h3>
+        <ul className="list-disc pl-5 text-xs text-ink-soft space-y-1">
           <li>Minimum 6 characters in length</li>
           <li>Consider using a mix of letters, numbers, and symbols for stronger security</li>
           <li>Avoid using easily guessable information</li>
